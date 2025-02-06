@@ -1,0 +1,76 @@
+﻿# Visual Studio 2015/2017 cache/options director
+.vs/
+
+# Build output
+Debug/
+DebugLocal/
+Release/
+bin/
+obj/
+
+# dependencies
+packages/
+node_packages/
+
+# Sonar temp folders
+.sonarqube/
+
+# Conflict resolution files
+*.orig
+
+# Files built by Visual Studio
+*.~*
+*_i.c
+*_p.c
+*_h.h
+*.ilk
+*.meta
+*.obj
+*.iobj
+*.pch
+*.pdb
+*.ipdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*_wpftmp.csproj
+*.log
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+*.jfm
+*.dbmdl
+
+# Visual Studio profiler
+*.psess
+*.vsp
+*.vspx
+*.sap
+
+# Visual Studio Trace Files
+*.e2e
+
+# TFS 2012 Local Workspace
+$tf/
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# User-specific files (MonoDevelop/Xamarin Studio)
+*.userprefs
+
+# tests
+TestResults/
