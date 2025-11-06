@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="StyleCopeRules" Description="StyleCopeRules custom ruleset" ToolsVersion="15.0">
+  <IncludeAll Action="Warning" />
+  <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
+    <Rule Id="SA0001" Action="None"> <!-- docs generation disabled --> </Rule>
+    <Rule Id="SA1101" Action="None"> <!-- locals not prefixed with this. --> </Rule>
+    <Rule Id="SA1122" Action="None"> <!-- use string.Empty --> </Rule>
+    <Rule Id="SA1128" Action="None"> <!-- constructor initializer on same line --> </Rule>
+    <Rule Id="SA1131" Action="None"> <!-- constant on left side of comparison --> </Rule>
+    <Rule Id="SA1200" Action="None"> <!-- directive not within namespace --> </Rule>
+    <Rule Id="SA1208" Action="None"> <!-- using order --> </Rule>
+    <Rule Id="SA1502" Action="None"> <!-- {} on single line --> </Rule>
+    <Rule Id="SA1515" Action="None"> <!-- blank line before single-line comment --> </Rule>
+    <Rule Id="SA1600" Action="None"> <!-- element missing docs --> </Rule>
+    <Rule Id="SA1602" Action="Warning"> <!-- enumeration items documented --> </Rule>
+    <Rule Id="SA1633" Action="None"> <!-- file missing header comment --> </Rule>
+    <Rule Id="SA1642" Action="None"> <!-- constructor docs standard text --> </Rule>
+    <Rule Id="SA1305" Action="Warning"> <!-- hungarian notation --> </Rule>
+  </Rules>
+  <Rules AnalyzerId="Microsoft.Analyzers.ManagedCodeAnalysis" RuleNamespace="Microsoft.Rules.Managed">
+    <Rule Id="CA1813" Action="None"> <!-- seal class if possible --> </Rule>
+    <Rule Id="CS1591" Action="None"> <!-- missing xml docs for public elements --> </Rule>
+  </Rules>
+  <Rules AnalyzerId="DiagnosticSuppressors" RuleNamespace="NUnit.NUnitAnalyzers">
+    <Rule Id="NUnit2045" Action="None"> <!-- Use Assert.Multiple --> </Rule>
+  </Rules>
+</RuleSet>

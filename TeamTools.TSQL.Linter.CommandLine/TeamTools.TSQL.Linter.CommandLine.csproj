@@ -1,0 +1,64 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <RestoreLockedMode Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</RestoreLockedMode>
+    <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <Deterministic>true</Deterministic>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <Configurations>Debug;Release;Test</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SqlLinterProj>TeamTools.TSQL.Linter</SqlLinterProj>
+    <FileLinterProj>TeamTools.StructuredFiles.Linter</FileLinterProj>
+    <SsdtLinterProj>TeamTools.SSDT.ProjectValidator</SsdtLinterProj>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TeamTools.TSQL.Common\TeamTools.Common.Linting.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SourceRoot Include="$(MSBuildThisFileDirectory)/" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(ContinuousIntegrationBuild)' == 'true'">
+    <SqlLinterBin Include="$(PluginsPath)\$(SqlLinterProj)\**\*.*">
+      <InProject>false</InProject>
+    </SqlLinterBin>
+    <FileLinterBin Include="$(PluginsPath)\$(FileLinterProj)\**\*.*">
+      <InProject>false</InProject>
+    </FileLinterBin>
+    <SsdtLinterBin Include="$(PluginsPath)\$(SsdtLinterProj)\**\*.*">
+      <InProject>false</InProject>
+    </SsdtLinterBin>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="DebugConfig.json">
+      <CopyToOutputDirectory Condition="'$(Configuration)' == 'Debug'">Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory Condition="'$(Configuration)'=='Test'">Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory Condition="'$(Configuration)' != 'Debug'">Never</CopyToOutputDirectory>
+    </None>
+    <None Update="DefaultConfig.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Plugins\" />
+  </ItemGroup>
+
+  <Target Name="CopyPlugins" Condition="'$(ContinuousIntegrationBuild)' == 'true'" AfterTargets="AfterBuild">
+    <Copy SourceFiles="@(SqlLinterBin)" DestinationFiles="$(TargetDir)\Plugins\$(SqlLinterProj)\%(RecursiveDir)%(FileName)%(Extension)" />
+    <Copy SourceFiles="@(FileLinterBin)" DestinationFiles="$(TargetDir)\Plugins\$(FileLinterProj)\%(RecursiveDir)%(FileName)%(Extension)" />
+    <Copy SourceFiles="@(SsdtLinterBin)" DestinationFiles="$(TargetDir)\Plugins\$(SsdtLinterProj)\%(RecursiveDir)%(FileName)%(Extension)" />
+  </Target>
+</Project>

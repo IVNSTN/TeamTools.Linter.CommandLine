@@ -1,0 +1,21 @@
+<Project>
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory).stylecop\StyleCop.ruleset</CodeAnalysisRuleSet>
+    <RunSettingsFilePath>$(MSBuildThisFileDirectory).runsettings</RunSettingsFilePath>
+    <RestoreConfigFile>$(MSBuildThisFileDirectory)NuGet.Config</RestoreConfigFile>
+    <RestoreIgnoreFailedSources>true</RestoreIgnoreFailedSources>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DisableSystemTextJsonSourceGenerator>true</DisableSystemTextJsonSourceGenerator>
+    <TreatWarningsAsErrors Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">true</TreatWarningsAsErrors>
+    <NoWarn>NU1801</NoWarn>
+    <NoWarn>NU1601</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory).stylecop\stylecop.json" Visible="false" />
+    <None Include="$(MSBuildProjectDirectory)\packages.lock.json" Visible="false" />
+  </ItemGroup>
+</Project>

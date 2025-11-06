@@ -1,0 +1,36 @@
+﻿{
+    "plugins": {
+        "TSQL": {
+            "dll": "./Plugins/TeamTools.TSQL.Linter/TeamTools.TSQL.Linter.dll",
+            "config": "./Plugins/TeamTools.TSQL.Linter/DefaultConfig.json"
+        }
+    },
+    "ignore": {
+        "folders": [
+            ".git",
+            ".vs",
+            ".stylecop",
+            "bin",
+            "obj",
+            "Framework",
+            "TestResults",
+            "TestSources",
+            "node_packages",
+            "packages",
+            "tSQLt"
+        ],
+        "extensions": [
+            ".dll",
+            ".orig",
+            ".exe",
+            ".user",
+            ".local",
+            ".dbmdl",
+            ".jfm",
+            ".dacpac",
+            ".rar",
+            ".zip",
+            ".7z"
+        ]
+    }
+}
