@@ -10,6 +10,9 @@ namespace TeamTools.Common.Linting
 
         ICollection<string> IgnoredExtensions { get; }
 
+        // TODO : or specific object with strong-typed properties?
+        string MainBranch { get; }
+
         void LoadFromFile(string filePath);
     }
 

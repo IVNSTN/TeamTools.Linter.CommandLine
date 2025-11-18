@@ -1,0 +1,4 @@
+﻿
+# Linting common classes
+
+tbd

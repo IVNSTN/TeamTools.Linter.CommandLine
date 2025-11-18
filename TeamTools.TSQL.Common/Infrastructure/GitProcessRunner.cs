@@ -66,7 +66,7 @@ namespace TeamTools.Common.Linting
             {
                 process.OutputDataReceived += (sender, e) =>
                 {
-                    if (e.Data == null)
+                    if (e.Data is null)
                     {
                         SetEvent(outputWaitHandle);
                     }
@@ -77,7 +77,7 @@ namespace TeamTools.Common.Linting
                 };
                 process.ErrorDataReceived += (sender, e) =>
                 {
-                    if (e.Data == null)
+                    if (e.Data is null)
                     {
                         SetEvent(errorWaitHandle);
                     }

@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using TeamTools.Common.Linting.Interfaces;
+using TeamTools.Common.Linting.Properties;
 
 namespace TeamTools.Common.Linting
 {
@@ -15,9 +16,9 @@ namespace TeamTools.Common.Linting
     public class PluginHandler : ILinterWithPluginsHandler
     {
         private const int MaxDopPerFiles = 16;
-        private const int MaxDopPerPlugins = 2;
-        private readonly Dictionary<Type, ILinter> plugins = new Dictionary<Type, ILinter>();
-        private readonly IDictionary<Type, List<string>> pluginSupportedFiles = new Dictionary<Type, List<string>>();
+        private readonly Dictionary<string, PluginInstanceInfo> plugins = new Dictionary<string, PluginInstanceInfo>(StringComparer.OrdinalIgnoreCase);
+        // TODO : shouldn't it be a ConcurrentDictionary?
+        private readonly Dictionary<string, List<PluginInstanceInfo>> supportedFileTypes = new Dictionary<string, List<PluginInstanceInfo>>(StringComparer.OrdinalIgnoreCase);
         private readonly IAssemblyWrapper assemblyWrapper;
 
         public PluginHandler(IAssemblyWrapper assemblyWrapper)
@@ -25,15 +26,13 @@ namespace TeamTools.Common.Linting
             this.assemblyWrapper = assemblyWrapper;
         }
 
-        public IEnumerable<ILinter> Plugins => plugins.Values;
-
         public void LoadPlugins(IDictionary<string, PluginInfo> pluginsWithConfig, Action<string> reportVerbose, IReporter pluginRepoter, string cultureCode = default)
         {
-            foreach (var pluginConfig in pluginsWithConfig)
+            foreach (var pluginConfig in pluginsWithConfig.AsParallel())
             {
                 try
                 {
-                    reportVerbose?.Invoke($"Loading {pluginConfig.Key} plugin...");
+                    reportVerbose?.Invoke(string.Format(Strings.PluginMsg_LoadingPlugin, pluginConfig.Key));
                     LoadPluginsFromAssembly(pluginConfig.Value.AssemblyPath, pluginConfig.Value.ConfigPath, pluginRepoter, reportVerbose, cultureCode);
                 }
                 catch (FileLoadException fe)
@@ -51,90 +50,89 @@ namespace TeamTools.Common.Linting
 
         public void RunOnFileSource(string file, TextReader source, IReporter pluginRepoter)
         {
+            const int MaxDopPerPlugins = 4;
             string fileName = Path.GetFileName(file);
+            string fileExt = Path.GetExtension(file);
+
+            if (!supportedFileTypes.TryGetValue(fileExt, out var relatedPlugins))
+            {
+                Debug.WriteLine($"No applicable plugins for file {fileName} - unsupported type");
+                return;
+            }
 
             Task.Run(() => Parallel.ForEach(
-                plugins.Keys,
+                relatedPlugins,
                 new ParallelOptions { MaxDegreeOfParallelism = MaxDopPerPlugins },
-                plugin =>
-                {
-                    if (pluginSupportedFiles[plugin].Exists(mask => fileName.EndsWith(mask, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        DoApplyPluginToFile(plugins[plugin], file, source, pluginRepoter);
-                    }
-                    else
-                    {
-                        Debug.WriteLine($"Skipping plugin {plugin} for file {fileName} - unsupported type");
-                    }
-                })).Wait();
+                plugin => DoApplyPluginToFile(plugin.Instance, file, source, pluginRepoter))).Wait();
         }
 
         public void RunOnFiles(IEnumerable<string> files, Action<string> reportVerbose, IReporter pluginRepoter)
         {
-            reportVerbose?.Invoke("Linting...");
-            int totalFiles = 0;
-            var lintedFilesPerPlugin = new ConcurrentDictionary<string, uint>(StringComparer.OrdinalIgnoreCase);
+            reportVerbose?.Invoke(Strings.PluginMsg_LintingBegins);
+            Func<string, uint, uint> init = new Func<string, uint, uint>((_, __) => 0);
+            Func<string, uint, uint> upd = new Func<string, uint, uint>((_, val) => ++val);
 
+            var lintedFilesPerPlugin = new ConcurrentDictionary<string, uint>(StringComparer.OrdinalIgnoreCase);
             foreach (var plugin in plugins.Keys)
             {
-                lintedFilesPerPlugin.AddOrUpdate(plugin.Name, 0, (key, val) => 0);
+                lintedFilesPerPlugin.AddOrUpdate(plugin, 0, init);
             }
 
-            Task.Run(() => Parallel.ForEach(
-                files,
-                new ParallelOptions { MaxDegreeOfParallelism = MaxDopPerFiles },
+            var fileParallelOptions = new ParallelOptions { MaxDegreeOfParallelism = MaxDopPerFiles };
+            var supportedFiles = GetFilesForRun(files, reportVerbose);
+
+            var doRunOnFile = new Action<string>(
                 file =>
                 {
-                    totalFiles++;
-                    string fileName = Path.GetFileName(file);
-                    reportVerbose?.Invoke($"starting with file: {fileName}");
+                    // TODO : respect basePath option here?
+                    reportVerbose?.Invoke(string.Format(Strings.PluginMsg_StartingWithFile, file));
 
-                    Task.Run(() => Parallel.ForEach(
-                        plugins.Keys,
-                        new ParallelOptions { MaxDegreeOfParallelism = MaxDopPerPlugins },
-                        plugin =>
-                        {
-                            if (pluginSupportedFiles[plugin].Exists(mask => fileName.EndsWith(mask, StringComparison.OrdinalIgnoreCase)))
-                            {
-                                DoApplyPluginToFile(plugins[plugin], file, pluginRepoter);
-                                lintedFilesPerPlugin.AddOrUpdate(plugin.Name, 1, (key, val) => ++val);
-                            }
-                            else
-                            {
-                                Debug.WriteLine($"Skipping plugin {plugin} for file {fileName} - unsupported type");
-                            }
-                        })).Wait();
-                })).Wait();
+                    string fileExt = Path.GetExtension(file);
+
+                    var pluginsForFile = supportedFileTypes[fileExt];
+                    int n = pluginsForFile.Count;
+                    for (int i = 0; i < n; i++)
+                    {
+                        var p = pluginsForFile[i];
+                        DoApplyPluginToFile(p.Instance, file, pluginRepoter);
+                        lintedFilesPerPlugin.AddOrUpdate(p.Name, 1, upd);
+                    }
+                });
+
+            Task.Run(() => Parallel.ForEach(
+                supportedFiles,
+                fileParallelOptions,
+                file => doRunOnFile(file))).Wait();
 
             if (reportVerbose != null)
             {
-                reportVerbose.Invoke("Done linting files by plugins:");
+                reportVerbose.Invoke(Strings.PluginMsg_DoneLintingByPlugins);
                 foreach (var total in lintedFilesPerPlugin)
                 {
-                    reportVerbose.Invoke($"    {total.Key} - {total.Value} files");
+                    reportVerbose.Invoke(string.Format(Strings.PluginMsg_FilesLintedPerPlugin, total.Key, total.Value));
                 }
 
-                reportVerbose.Invoke($"    out of total {totalFiles} files.");
+                int totalFiles = files.Count();
+                reportVerbose.Invoke(string.Format(Strings.PluginMsg_TotalFilesLinted, totalFiles));
             }
         }
 
-        public bool HasPlugins()
+        public IEnumerable<string> GetFilesForRun(IEnumerable<string> files, Action<string> reportVerbose)
         {
-            return Plugins.Any();
+            return files.Where(fl => supportedFileTypes.ContainsKey(Path.GetExtension(fl)));
         }
 
-        private void DoApplyPluginToFile(ILinter plugin, string file, IReporter reporter)
+        public bool HasPlugins() => plugins.Count > 0;
+
+        private static void DoApplyPluginToFile(ILinter plugin, string file, IReporter reporter)
         {
-            using (var reader = new StreamReader(file))
+            using (var reader = File.OpenText(file))
             {
-                var fileReporter = new SingleFileReporterDecorator(file, reporter);
-                var context = new LintingContext(file, reader, fileReporter);
-
-                plugin.PerformAction(context);
+                DoApplyPluginToFile(plugin, file, reader, reporter);
             }
         }
 
-        private void DoApplyPluginToFile(ILinter plugin, string file, TextReader reader, IReporter reporter)
+        private static void DoApplyPluginToFile(ILinter plugin, string file, TextReader reader, IReporter reporter)
         {
             var fileReporter = new SingleFileReporterDecorator(file, reporter);
             var context = new LintingContext(file, reader, fileReporter);
@@ -146,34 +144,60 @@ namespace TeamTools.Common.Linting
         {
             var dll = assemblyWrapper.Load(assemblyPath);
 
-            foreach (var type in assemblyWrapper.GetExportedTypes(dll))
+            foreach (var type in assemblyWrapper.GetExportedTypes(dll).AsParallel())
             {
-                var interfaces = type.GetInterfaces().ToList();
-
-                if (!interfaces.Contains(typeof(ILinter)))
+                if (!type.GetInterfaces().Contains(typeof(ILinter)))
                 {
                     continue;
                 }
 
-                if (plugins.ContainsKey(type))
+                if (plugins.ContainsKey(type.Name))
                 {
-                    reportVerbose?.Invoke($"Already loaded plugin '{type.FullName}'");
+                    reportVerbose?.Invoke(string.Format(Strings.PluginMsg_PluginAlreadyLoaded, type.FullName));
                     continue;
                 }
 
                 var plugin = (ILinter)Activator.CreateInstance(type);
                 plugin.Init(pluginConfigPath, pluginReporter, cultureCode);
                 // rules count and supported file masks are available only after LoadConfig call
-                var fileTypes = plugin.GetSupportedFiles().ToList();
-                pluginSupportedFiles.Add(type, fileTypes);
+                var fileTypes = new HashSet<string>(plugin.GetSupportedFiles(), StringComparer.OrdinalIgnoreCase);
+
+                var pluginInfo = new PluginInstanceInfo
+                {
+                    ClassType = type,
+                    Instance = plugin,
+                    Name = type.Name,
+                };
+
+                foreach (var ft in fileTypes)
+                {
+                    if (!supportedFileTypes.TryGetValue(ft, out var pluginsForFileExt))
+                    {
+                        pluginsForFileExt = new List<PluginInstanceInfo>();
+                        supportedFileTypes.Add(ft, pluginsForFileExt);
+                    }
+
+                    pluginsForFileExt.Add(pluginInfo);
+                }
+
                 int rulesCount = plugin.GetRulesCount();
-                plugins.Add(type, plugin);
+                plugins.Add(type.Name, pluginInfo);
 
                 string fileTypeList = string.Join(", ", fileTypes);
                 string version = assemblyWrapper.GetVersion(dll);
-                reportVerbose?.Invoke($"Loaded plugin: '{type.FullName}', Version: '{version}', Rules: {rulesCount}");
-                reportVerbose?.Invoke($"    for files: {fileTypeList}");
+                reportVerbose?.Invoke(string.Format(Strings.PluginMsg_LoadedPluginInfo, type.FullName, version, rulesCount));
+                reportVerbose?.Invoke(string.Format(Strings.PluginMsg_LoadedPluginSupportedFiles, fileTypeList));
             }
+        }
+
+        [ExcludeFromCodeCoverage]
+        private sealed class PluginInstanceInfo
+        {
+            public string Name { get; set; }
+
+            public ILinter Instance { get; set; }
+
+            public Type ClassType { get; set; }
         }
     }
 }

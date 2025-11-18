@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 
 namespace TeamTools.Common.Linting
 {
@@ -10,7 +9,8 @@ namespace TeamTools.Common.Linting
             Func<TAttribute, TValue> valueSelector)
             where TAttribute : Attribute
         {
-            if (type.GetCustomAttributes(typeof(TAttribute), true).FirstOrDefault() is TAttribute att)
+            var attrs = type.GetCustomAttributes(typeof(TAttribute), false);
+            if (attrs.Length > 0 && attrs[0] is TAttribute att)
             {
                 return valueSelector(att);
             }

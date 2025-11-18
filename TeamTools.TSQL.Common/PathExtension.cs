@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace TeamTools.Common.Linting
 {
@@ -82,20 +80,6 @@ namespace TeamTools.Common.Linting
             return Uri.UnescapeDataString(rltvPath)
                 .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
                 .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-        }
-
-        public static IEnumerable<Regex> MakeFileMatchPatterns(IEnumerable<string> masks)
-        {
-            foreach (string mask in masks)
-            {
-                string pattern = WildCardToRegular(mask);
-                yield return new Regex(pattern, RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Singleline);
-            }
-        }
-
-        private static string WildCardToRegular(string value)
-        {
-            return string.Concat("^", Regex.Escape(value).Replace("\\?", ".").Replace("\\*", ".*"), "$");
         }
     }
 }

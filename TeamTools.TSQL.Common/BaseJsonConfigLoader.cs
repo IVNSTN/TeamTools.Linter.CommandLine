@@ -6,11 +6,17 @@ namespace TeamTools.Common.Linting
 {
     public abstract class BaseJsonConfigLoader<T>
     {
+        private static readonly JsonLoadSettings LoadSettings = new JsonLoadSettings
+        {
+            LineInfoHandling = LineInfoHandling.Ignore,
+            CommentHandling = CommentHandling.Ignore,
+        };
+
         public static bool TryParseJson(string jsonString, out JToken token)
         {
             try
             {
-                token = JToken.Parse(jsonString);
+                token = JToken.Parse(jsonString, LoadSettings);
                 return true;
             }
             catch
@@ -29,7 +35,7 @@ namespace TeamTools.Common.Linting
                 return default;
             }
 
-            using (var reader = new StreamReader(configPath))
+            using (var reader = File.OpenText(configPath))
             {
                 return LoadConfig(reader);
             }
@@ -38,7 +44,7 @@ namespace TeamTools.Common.Linting
         public T LoadConfig(TextReader configSource)
         {
             Debug.WriteLine("LoadConfig 2 " + configSource?.ToString());
-            if (!TryParseJson(configSource?.ReadToEnd(), out var json) || json == null)
+            if (!TryParseJson(configSource?.ReadToEnd(), out var json) || json is null)
             {
                 return default;
             }

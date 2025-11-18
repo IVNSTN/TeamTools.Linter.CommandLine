@@ -1,0 +1,99 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp3.1;net6.0;net8.0</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <Configurations>Debug;Release</Configurations>
+  </PropertyGroup>
+
+  <!-- Packing options -->
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <ToolCommandName>runlint</ToolCommandName>
+    <PackAsTool>true</PackAsTool>
+    <PackageOutputPath>../.nupkg</PackageOutputPath>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>./readme.md</PackageReadmeFile>
+    <PackageTags>T-SQL;tsql;sqlproj;Analyzer;StaticCodeAnalysis;CodeQuality;linting;TeamTools</PackageTags>
+    <Description>Command-line static code analysis tools for linting SQL projects</Description>
+  </PropertyGroup>
+
+  <!-- Dependencies -->
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <!-- Later framework version contain the System.Text.Encoding.CodePages library.
+    Also newer versions lead to unexpected troubles in runtime.
+    Thus including it for netstandard2.0 only and with very old version number. -->
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="7.0.0" PrivateAssets="All" Condition="$(targetFramework)=='netcoreapp3.1'" />
+    <ProjectReference Include="..\TeamTools.TSQL.Common\TeamTools.Common.Linting.csproj" />
+  </ItemGroup>
+
+  <!-- Manual includes -->
+  <ItemGroup>
+    <Content Include="..\LICENSE" Pack="true" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="DefaultConfig.json" CopyToOutputDirectory="PreserveNewest" />
+    <Folder Include="plugins\" />
+  </ItemGroup>
+
+  <!-- Stuff for embedding plugin binaries into the build output -->
+  <PropertyGroup>
+    <SqlLinterProj>TeamTools.TSQL.Linter</SqlLinterProj>
+    <FileLinterProj>TeamTools.StructuredFiles.Linter</FileLinterProj>
+    <SsdtLinterProj>TeamTools.SSDT.ProjectValidator</SsdtLinterProj>
+
+    <PluginsPath>$(MSBuildThisFileDirectory)..</PluginsPath>
+    <PluginSourceSubfolder Condition="'$(TargetFramework)'=='netcoreapp3.1'">bin\$(Configuration)\netstandard2.0</PluginSourceSubfolder>
+    <PluginSourceSubfolder Condition="'$(TargetFramework)'!='netcoreapp3.1'">bin\$(Configuration)\$(TargetFramework)</PluginSourceSubfolder>
+    <PluginNugetTargetSubfolder>tools\$(TargetFramework)\any\plugins</PluginNugetTargetSubfolder>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);CustomContentTarget</TargetsForTfmSpecificContentInPackage>
+    <CopyRetryCount>2</CopyRetryCount>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SqlLinterBin Include="$(PluginsPath)\$(SqlLinterProj)\$(PluginSourceSubfolder)\**\*.*">
+      <InProject>false</InProject>
+    </SqlLinterBin>
+    <FileLinterBin Include="$(PluginsPath)\$(FileLinterProj)\$(PluginSourceSubfolder)\**\*.*">
+      <InProject>false</InProject>
+    </FileLinterBin>
+    <SsdtLinterBin Include="$(PluginsPath)\$(SsdtLinterProj)\$(PluginSourceSubfolder)\**\*.*">
+      <InProject>false</InProject>
+    </SsdtLinterBin>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Strings.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Strings.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Strings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <Target Name="CopyPlugins" AfterTargets="AfterBuild">
+    <Copy SourceFiles="@(SqlLinterBin)" DestinationFiles="$(TargetDir)\plugins\$(SqlLinterProj)\%(RecursiveDir)%(FileName)%(Extension)" />
+    <Copy SourceFiles="@(FileLinterBin)" DestinationFiles="$(TargetDir)\plugins\$(FileLinterProj)\%(RecursiveDir)%(FileName)%(Extension)" />
+    <Copy SourceFiles="@(SsdtLinterBin)" DestinationFiles="$(TargetDir)\plugins\$(SsdtLinterProj)\%(RecursiveDir)%(FileName)%(Extension)" />
+  </Target>
+
+  <Target Name="CustomContentTarget">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="@(SqlLinterBin)">
+        <PackagePath>$(PluginNugetTargetSubfolder)\$(SqlLinterProj)\%(RecursiveDir)%(FileName)%(Extension)</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="@(SsdtLinterBin)">
+        <PackagePath>$(PluginNugetTargetSubfolder)\$(SsdtLinterProj)\%(RecursiveDir)%(FileName)%(Extension)</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="@(FileLinterBin)">
+        <PackagePath>$(PluginNugetTargetSubfolder)\$(FileLinterProj)\%(RecursiveDir)%(FileName)%(Extension)</PackagePath>
+      </TfmSpecificPackageFile>
+    </ItemGroup>
+  </Target>
+</Project>

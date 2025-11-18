@@ -1,15 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace TeamTools.Common.Linting
 {
     [ExcludeFromCodeCoverage]
-    public class RuleClassInfoDto
+    public sealed class RuleClassInfoDto
     {
         public Type RuleClassType { get; set; }
 
-        public List<string> SupportedDataTypes { get; set; }
+        public string[] SupportedDataTypes { get; set; }
 
         public string RuleFullName { get; set; }
 

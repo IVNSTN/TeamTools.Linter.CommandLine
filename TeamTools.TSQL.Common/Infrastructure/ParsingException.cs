@@ -4,17 +4,14 @@ namespace TeamTools.Common.Linting
 {
     public class ParsingException : Exception
     {
-        private readonly int line;
-        private readonly int col;
-
         public ParsingException(string msg, int line, int col) : base(msg)
         {
-            this.line = line;
-            this.col = col;
+            this.Line = line;
+            this.Col = col;
         }
 
-        public int Line => line;
+        public int Line { get; }
 
-        public int Col => col;
+        public int Col { get; }
     }
 }

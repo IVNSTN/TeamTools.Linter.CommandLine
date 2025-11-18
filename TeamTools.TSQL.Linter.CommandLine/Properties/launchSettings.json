@@ -1,8 +1,0 @@
-﻿{
-    "profiles": {
-        "TeamTools.TSQL.Linter.CommandLine": {
-            "commandName": "Project",
-            "commandLineArgs": "--config=./DebugConfig.json --diff --dir=\"%USERPROFILE%\\source\\db_project\\\""
-        }
-    }
-}

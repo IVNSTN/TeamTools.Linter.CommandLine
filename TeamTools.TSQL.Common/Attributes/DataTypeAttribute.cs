@@ -15,6 +15,6 @@ namespace TeamTools.Common.Linting
             this.DataTypeName = dataTypeName;
         }
 
-        public string DataTypeName { get; private set; }
+        public string DataTypeName { get; }
     }
 }

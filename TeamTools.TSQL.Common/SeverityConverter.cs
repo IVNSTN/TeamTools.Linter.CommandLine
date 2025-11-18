@@ -31,12 +31,12 @@ namespace TeamTools.Common.Linting
                 return Severity.None;
             }
 
-            if (!MapToEnum.ContainsKey(severity))
+            if (MapToEnum.TryGetValue(severity, out Severity convertedValue))
             {
-                throw new ArgumentOutOfRangeException(nameof(severity), $"'{severity}'");
+                return convertedValue;
             }
 
-            return MapToEnum[severity];
+            throw new ArgumentOutOfRangeException(nameof(severity), $"'{severity}'");
         }
 
         public static string ConvertToString(Severity severity) => MapToString[severity];

@@ -14,11 +14,11 @@ namespace TeamTools.Common.Linting.Infrastructure
             return PathExtension.MakeRelativePath(sanitizedRoot, sanitizedPath);
         }
 
-        public string MakeCmdListDiffCommitted(string gitRoot, string folder, string ignoredFolders = default)
+        public string MakeCmdListDiffCommitted(string gitRoot, string folder, string mainBranch, string ignoredFolders = default)
         {
             // sanitizing to prevent tail gitRoot subfolder presence in the result
             string repoSubFolder = GetFolderRelativePathToGitRoot(gitRoot, folder);
-            return string.Format(GitCommandTemplate, @"--no-merges master...", gitRoot, ignoredFolders, repoSubFolder);
+            return string.Format(GitCommandTemplate, $"--no-merges {mainBranch}...", gitRoot, ignoredFolders, repoSubFolder);
         }
 
         public string MakeCmdListDiffUncommitted(string gitRoot, string folder, string ignoredFolders = default)

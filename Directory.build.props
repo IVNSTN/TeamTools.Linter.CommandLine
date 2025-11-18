@@ -1,21 +1,101 @@
 <Project>
+  <!-- Code analysis options -->
   <PropertyGroup>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory).stylecop\StyleCop.ruleset</CodeAnalysisRuleSet>
     <RunSettingsFilePath>$(MSBuildThisFileDirectory).runsettings</RunSettingsFilePath>
+    <TreatWarningsAsErrors Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">true</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);NU1601;NU1603;NU1801;NETSDK1138</NoWarn>
+    <!-- IDE0130 Namespace does not match folder structure -->
+    <NoWarn>$(NoWarn);IDE0130</NoWarn>
+    <!-- Rules not compatible with netstandard 2.0: -->
+    <!--  IDE0090 New expression can be simplified -->
+    <NoWarn>$(NoWarn);IDE0090</NoWarn>
+    <!--  Collection initialization can be simplified -->
+    <NoWarn>$(NoWarn);IDE0028;IDE0300;IDE0301;IDE0305</NoWarn>
+    <!--  IDE0290 Use primary constructor -->
+    <NoWarn>$(NoWarn);IDE0290</NoWarn>
+    <!--  IDE0083 Use pattern matching -->
+    <NoWarn>$(NoWarn);IDE0083</NoWarn>
+    <!--  IDE0074 Use compound assignment -->
+    <NoWarn>$(NoWarn);IDE0074</NoWarn>
+    <!--  IDE0057 Substring can be simplified -->
+    <NoWarn>$(NoWarn);IDE0057</NoWarn>
+    <!--  IDE0056 Indexing can be simplified -->
+    <NoWarn>$(NoWarn);IDE0056</NoWarn>
+    <!--  IDE0063 Using can be simplified -->
+    <NoWarn>$(NoWarn);IDE0063</NoWarn>
+    <!--  IDE0066 Use switch expression -->
+    <NoWarn>$(NoWarn);IDE0066</NoWarn>
+    <!--  CA1510 Use ArgumentNullException.ThrowIfNull -->
+    <NoWarn>$(NoWarn);CA1510</NoWarn>
+    <!--  RCS1187 Use constant instead of field -->
+    <NoWarn>$(NoWarn);RCS1187</NoWarn>
+  </PropertyGroup>
+
+  <!-- Restore options -->
+  <PropertyGroup>
     <RestoreConfigFile>$(MSBuildThisFileDirectory)NuGet.Config</RestoreConfigFile>
     <RestoreIgnoreFailedSources>true</RestoreIgnoreFailedSources>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <RestoreLockedMode Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</RestoreLockedMode>
+    <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+  </PropertyGroup>
+
+  <!-- Build management -->
+  <ItemGroup>
+    <SourceRoot Include="$(MSBuildProjectDirectory)/" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(Platform)'=='AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsTestProject)'!='true'">
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Deterministic>true</Deterministic>
+    <DeterministicSourcePaths>true</DeterministicSourcePaths>
+    <PathMap>$(MSBuildThisFileDirectory)=./</PathMap>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DisableSystemTextJsonSourceGenerator>true</DisableSystemTextJsonSourceGenerator>
-    <TreatWarningsAsErrors Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">true</TreatWarningsAsErrors>
-    <NoWarn>NU1801</NoWarn>
-    <NoWarn>NU1601</NoWarn>
   </PropertyGroup>
+
+  <!-- Additional info options -->
+  <PropertyGroup>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <NeutralLanguage>en</NeutralLanguage>
+    <NeutralResourcesLanguage>en</NeutralResourcesLanguage>
+  </PropertyGroup>
+
+  <!-- No packing for test projects -->
+  <PropertyGroup Condition="'$(IsTestProject)'=='true'">
+    <IsPackable>false</IsPackable>
+    <IsPublishable>false</IsPublishable>
+  </PropertyGroup>
+
+  <!-- Packing options -->
+  <PropertyGroup>
+    <ContentTargetFolders>content</ContentTargetFolders>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <AdditionalFiles Include="$(MSBuildThisFileDirectory).stylecop\stylecop.json" Visible="false" />
+    <PackageReference Include="Roslynator.Analyzers" Version="4.14.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <None Include="$(MSBuildProjectDirectory)\packages.lock.json" Visible="false" />
+    <!-- Newer version helps better resolving common dll dependencies -->
+    <PackageReference Include="Microsoft.NETCore.Platforms" Version="7.0.4"  Condition="'$(IsTestProject)' != 'true'" />
   </ItemGroup>
 </Project>

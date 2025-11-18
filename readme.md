@@ -1,12 +1,12 @@
-
+﻿
 # TeamTools Linter CommandLine
 
-Утилита командной строки для запуска линтинга с поддержкой подключаемых плагинов.
+Утилита командной строки для выполнения линтинга с поддержкой подключаемых плагинов.
 
 ## Плагины
 
-Например, [TeamTools Linter TSQL](https://github.com/IVNSTN/TeamTools.Linter.TSQL) для статического анализа кода на **T-SQL**.
-Перечень плагинов необходимо указать в [конфигурационном файле](./TeamTools.TSQL.Linter.CommandLine/DefaultConfig.json).
+Например, IVNSTN/TeamTools.Linter.TSQL для статического анализа кода на **T-SQL**.
+Перечень плагинов необходимо указать в [конфигурационном файле](./TeamTools.Linter.CommandLine/DefaultConfig.json).
 
 ## Параметры
 
@@ -32,20 +32,22 @@
 
 ### Линтинг диффа по каталогу
 
+```cmd
+.\TeamTools.Linter.CommandLine.exe --dir "c:\source\my_project"  --diff
 ```
-.\TeamTools.TSQL.Linter.CommandLine.exe --config .\DefaultConfig.json --dir "c:\source\my_project"  --diff
-```
+
+Дифф вычисляется по Git относительно главной ветки, в итоге сканируются только изменённые файлы. Имя главной ветки можно указать в конфигурационном файле.
 
 ### Линтинг конкретного файла
 
-```
-.\TeamTools.TSQL.Linter.CommandLine.exe --config .\DefaultConfig.json --file "c:\source\my_project\Stored procedures\dbo.my_proc.sql"
+```cmd
+.\TeamTools.Linter.CommandLine.exe --file "c:\source\my_project\Stored procedures\dbo.my_proc.sql"
 ```
 
 ### Линтинг всех файлов директории без учета info-сообщений
 
-```
-.\TeamTools.TSQL.Linter.CommandLine.exe --config .\DefaultConfig.json --dir "c:\source\my_project"  --severity warning
+```cmd
+.\TeamTools.Linter.CommandLine.exe --dir "c:\source\my_project"  --severity warning
 ```
 
 ## Интеграция
@@ -54,19 +56,37 @@
 
 ### SSMS External Tool
 
-Откройте пункт меню Tools/External tools в SSMS и добавьте новый элемент в список. Далее введите полный путь к исполняемому файлу линтера в поле "Command" и строку
+Выполнить линтинг файла, открытого в текущей вкладке SSM можно с помощью настраиваемого пункта меню.
+Для создания нового пункта меню зайдите в Tools / External Tools, добавьте новый элемент и настройте как показано ниже.
 
-`--file $(ItemPath) --config .\DefaultConfig.json --withversion`
+```ini
+Command           = <path to exe>\TeamTools.Linter.CommandLine.exe
+Arguments         = --file $(ItemPath) --with-version
+Initial directory = <пусто>
+Use output window = поставьте галочку
+```
 
 в поле "Arguments". В поле "Initial directory" введите путь к директории с исполняемым файлом линтера (такой же как в поле "Command", но без имени файла самого exe). Поставьте галочку "Use output window", остальные пусть останутся снятыми.
 
 Теперь можно линтить файл в открытой вкладке SSMS: нажмите правой клавишей мыши на заголовке открытой вкладки и выберите пункт меню, название которого выбрали для только что добавленного элемента "External tools".
 
+## Visual Studio External Tool
+
+Настройка команды для линтинга конкретного файла аналогична приведенной выше для SSMS, здесь же приводится пример
+для поиска стопперов во всём имеющемся диффе с главной веткой в текущем репозитории:
+
+```ini
+Command           = <path to exe>\TeamTools.Linter.CommandLine.exe
+Arguments         = --diff --severity warning --with-version
+Initial directory = $(SolutionDir)
+Use output window = поставьте галочку
+```
+
 ### SourceTree Custom Action
 
 Откройте пункт меню Tools/Options в SourceTree, выберите вкладку "Custom actions" и добавьте новый элемент в список. Далее введите полный путь к исполняемому файлу линтера в поле "Script to run" и приведенную ниже строку в поле "Parameter":
 
-`--file "$REPO\$FILE" --config .\DefaultConfig.json --severity warning --verbose`
+`--file "$REPO\$FILE" --severity warning --verbose`
 
 
 Теперь можно линтить выбранный файл прямо из интерфейса **SourceTree**.
@@ -74,7 +94,7 @@
 ### GIT hook
 
 Измененные файлы можно автоматически линтить перед пушем или даже перед коммитом. Для этого добавьте в соответствующее событие вызов скрипта, пример которого приведен ниже.
-В качестве первого и единственного параметра передайте ему полный путь к папке, в которой находится `TeamTools.TSQL.Linter.CommandLine.exe`
+В качестве первого и единственного параметра передайте ему полный путь к папке, в которой находится `TeamTools.Linter.CommandLine.exe`
 Чтобы результат был похожим на линтинг в пайплайне CI, можно ограничить минимальную серьезность замечаний при помощи параметра `--severity`.
 
 ```sh
@@ -86,7 +106,7 @@ echo "linter: $linter_folder"
 repo_path="$(git rev-parse --show-toplevel)"
 echo "repository: $repo_path"
 
-"$linter_folder/TeamTools.TSQL.Linter.CommandLine.exe" \
+"$linter_folder/TeamTools.Linter.CommandLine.exe" \
     --config "$linter_folder/DefaultConfig.json" \
     --dir "$repo_path" \
     --basepath "$repo_path" \
@@ -109,4 +129,4 @@ fi
 
 ### CI pipeline
 
-В пайплайн сборки утилита интегрируется схожим образом: сконструируйте консольный вызов с нужными параметрами и добавьте этот вызов в качестве шага пайплайна. Если не нужно, чтобы обнаружение замечаний роняло билд (например, вы отдаете принятие решения на откуп Quality Gate в SonarQube или аналоге), то добавьте параметр `--quiet` и тогда ExitCode всегда будет 0.
+В пайплайн сборки утилита интегрируется схожим образом: сконструируйте консольный вызов с нужными параметрами и добавьте этот вызов в качестве шага пайплайна. Если не нужно, чтобы обнаружение замечаний роняло билд (например вы отдаете принятие решения на откуп Quality Gate в SonarQube), то добавьте параметр `--quiet` и тогда ExitCode всегда будет 0.

@@ -4,6 +4,6 @@ namespace TeamTools.Common.Linting
 {
     public interface IVcsAccessor
     {
-        IEnumerable<string> GetModifiedFiles(string folder);
+        IEnumerable<string> GetModifiedFiles(string folder, string mainBranch);
     }
 }

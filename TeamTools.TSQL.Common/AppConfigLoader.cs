@@ -6,11 +6,14 @@ using System.Linq;
 
 namespace TeamTools.Common.Linting
 {
+    // TODO : It does not really look like a _very_common_ thing
+    // and probably should be moved elsewhere from the current project.
     public class AppConfigLoader : IAppConfigLoader
     {
         private const string PluginListConfigNode = "plugins";
         private const string IgnoredFoldersConfigNode = "ignore.folders";
         private const string IgnoredFileExtensionsConfigNode = "ignore.extensions";
+        private const string OptionsConfigNode = "options";
         private readonly IFileSystemWrapper fileSystem;
         private string rootPath;
 
@@ -22,18 +25,19 @@ namespace TeamTools.Common.Linting
 
         public IDictionary<string, PluginInfo> Plugins { get; } = new Dictionary<string, PluginInfo>(StringComparer.OrdinalIgnoreCase);
 
-        public ICollection<string> IgnoredFolders { get; } = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+        public ICollection<string> IgnoredFolders { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        public ICollection<string> IgnoredExtensions { get; } = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+        public ICollection<string> IgnoredExtensions { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        public string MainBranch { get; private set; } = "master";
 
         public void Load(TextReader config)
         {
-            Plugins.Clear();
-
             if (TryParseJson(config.ReadToEnd(), out JToken json))
             {
                 ExtractPlugins(json);
                 ExtractIgnores(json);
+                ExtractOptions(json);
             }
             else
             {
@@ -71,36 +75,69 @@ namespace TeamTools.Common.Linting
             }
         }
 
+        private static IEnumerable<string> ExtractListFromJson(JToken jsonObject, string path)
+        {
+            return jsonObject
+                .SelectTokens(path)
+                .Children()
+                .OfType<JValue>()
+                .Select(jt => jt.Value.ToString());
+        }
+
+        private static void FillIgnoreList(ICollection<string> ignoreCollection, JToken jsonObject, string path)
+        {
+            foreach (string value in ExtractListFromJson(jsonObject, path))
+            {
+                ignoreCollection.Add(value);
+            }
+        }
+
         private void ExtractPlugins(JToken jsonObject)
         {
-            var plugins = jsonObject.SelectTokens(".." + PluginListConfigNode).ToList();
+            var plugins = jsonObject
+                .SelectTokens($"..{PluginListConfigNode}")
+                .Children()
+                .OfType<JProperty>();
 
             foreach (var plugin in plugins)
             {
-                foreach (var jsonToken in plugin.Children())
+                if (TryParsePluginOptions(rootPath, plugin.Value, out var pluginOptions))
                 {
-                    var prop = (JProperty)jsonToken;
-
-                    var pluginOptions = prop.Value.ToObject<Dictionary<string, string>>();
-
-                    pluginOptions.TryGetValue("docsBasePath", out string docsBasePath);
-                    pluginOptions.TryGetValue("docsBaseUrl", out string docsBaseUrl);
-
-                    if (pluginOptions.TryGetValue("dll", out string pluginPath)
-                    && pluginOptions.TryGetValue("config", out string pluginConfigPath))
-                    {
-                        Plugins.Add(
-                            prop.Name,
-                            new PluginInfo
-                            {
-                                AssemblyPath = fileSystem.MakeAbsolutePath(rootPath, pluginPath),
-                                ConfigPath = fileSystem.MakeAbsolutePath(rootPath, pluginConfigPath),
-                                BaseDocsPath = fileSystem.MakeAbsolutePath(rootPath, docsBasePath),
-                                BaseDocsUrl = docsBaseUrl,
-                            });
-                    }
+                    Plugins.Add(plugin.Name, pluginOptions);
                 }
             }
+        }
+
+        private bool TryParsePluginOptions(string rootPath, JToken value, out PluginInfo pluginOptions)
+        {
+            var opt = value
+                .Children()
+                .OfType<JProperty>();
+
+            pluginOptions = default;
+
+            foreach (var o in opt)
+            {
+                if (o.Name == "docsBaseUrl")
+                {
+                    pluginOptions.BaseDocsUrl = o.Value.ToString();
+                }
+                else if (o.Name == "dll")
+                {
+                    pluginOptions.AssemblyPath = fileSystem.MakeAbsolutePath(rootPath, o.Value.ToString());
+                }
+                else if (o.Name == "config")
+                {
+                    pluginOptions.ConfigPath = fileSystem.MakeAbsolutePath(rootPath, o.Value.ToString());
+                }
+                else if (o.Name == "docsBasePath")
+                {
+                    pluginOptions.BaseDocsPath = fileSystem.MakeAbsolutePath(rootPath, o.Value.ToString());
+                }
+            }
+
+            return !string.IsNullOrEmpty(pluginOptions.AssemblyPath)
+                && !string.IsNullOrEmpty(pluginOptions.ConfigPath);
         }
 
         private void ExtractIgnores(JToken jsonObject)
@@ -109,24 +146,19 @@ namespace TeamTools.Common.Linting
             FillIgnoreList(IgnoredExtensions, jsonObject, ".." + IgnoredFileExtensionsConfigNode);
         }
 
-        private void FillIgnoreList(ICollection<string> ignoreCollection, JToken jsonObject, string path)
+        private void ExtractOptions(JToken jsonObject)
         {
-            ignoreCollection.Clear();
-            foreach (string value in ExtractListFromJson(jsonObject, path))
-            {
-                ignoreCollection.Add(value);
-            }
-        }
-
-        private IEnumerable<string> ExtractListFromJson(JToken jsonObject, string path)
-        {
-            return jsonObject
-                .SelectTokens(path)
-                .ToList()
-                .ToList()
+            var option = jsonObject
+                .SelectTokens(".." + OptionsConfigNode)
                 .Children()
-                .Select(jt => ((JValue)jt).Value.ToString())
-                .Distinct();
+                .OfType<JProperty>()
+                .FirstOrDefault(opt => opt.Name.Equals("mainBranch", StringComparison.OrdinalIgnoreCase));
+
+            // TODO : shouldn't it do some WriteVerbose?
+            if (option != null)
+            {
+                MainBranch = option.Value.ToString();
+            }
         }
     }
 }

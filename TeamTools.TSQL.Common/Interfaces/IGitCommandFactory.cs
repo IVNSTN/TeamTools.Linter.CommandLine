@@ -2,7 +2,7 @@
 {
     public interface IGitCommandFactory
     {
-        string MakeCmdListDiffCommitted(string gitRoot, string folder, string ignoredFolders = default);
+        string MakeCmdListDiffCommitted(string gitRoot, string folder, string mainBranch, string ignoredFolders = default);
 
         string MakeCmdListDiffUncommitted(string gitRoot, string folder, string ignoredFolders = default);
 

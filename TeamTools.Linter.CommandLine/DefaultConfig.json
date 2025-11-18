@@ -1,0 +1,43 @@
+﻿{
+    "plugins": {
+        "SSDT": {
+            "dll": "./Plugins/TeamTools.Linter.SSDT/TeamTools.SSDT.ProjectValidator.dll",
+            "config": "./Plugins/TeamTools.Linter.SSDT/DefaultConfig.json"
+        },
+        "TSQL": {
+            "dll": "./Plugins/TeamTools.Linter.TSQL/TeamTools.TSQL.Linter.dll",
+            "config": "./Plugins/TeamTools.Linter.TSQL/DefaultConfig.json"
+        }
+    },
+    "ignore": {
+        "folders": [
+            ".git",
+            ".vs",
+            ".stylecop",
+            "bin",
+            "obj",
+            "Framework",
+            "TestResults",
+            "TestSources",
+            "node_packages",
+            "packages",
+            "tSQLt"
+        ],
+        "extensions": [
+            ".dll",
+            ".orig",
+            ".exe",
+            ".user",
+            ".local",
+            ".dbmdl",
+            ".jfm",
+            ".dacpac",
+            ".rar",
+            ".zip",
+            ".7z"
+        ]
+    },
+    "options": {
+        "mainBranch": "master"
+    }
+}

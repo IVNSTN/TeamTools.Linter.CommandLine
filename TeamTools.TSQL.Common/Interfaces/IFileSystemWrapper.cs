@@ -9,7 +9,7 @@ namespace TeamTools.Common.Linting
 
         IEnumerable<string> GetAllFilesFromDirectory(string directory);
 
-        IEnumerable<string> GetAllFilesFromDirectory(string directory, IEnumerable<string> excludedFolders, IEnumerable<string> excludedFileTypes);
+        IEnumerable<string> GetAllFilesFromDirectory(string directory, ICollection<string> excludedFolders, ICollection<string> excludedFileTypes);
 
         IEnumerable<string> ReadAllLinesFromFile(string filePath);
 

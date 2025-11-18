@@ -30,7 +30,7 @@ namespace TeamTools.Common.Linting
             GC.SuppressFinalize(this);
         } */
 
-        public IEnumerable<string> GetModifiedFiles(string folder)
+        public IEnumerable<string> GetModifiedFiles(string folder, string mainBranch)
         {
             var gitChanges = new GitOutputLogger();
             var git = new GitProcessRunner(gitChanges, folder);
@@ -42,7 +42,7 @@ namespace TeamTools.Common.Linting
             gitChanges.Reset();
             // TODO : async
             git.ExecuteCmd(cmdFactory.MakeCmdListDiffUncommitted(gitRoot, folder, ignoredFolders));
-            git.ExecuteCmd(cmdFactory.MakeCmdListDiffCommitted(gitRoot, folder, ignoredFolders));
+            git.ExecuteCmd(cmdFactory.MakeCmdListDiffCommitted(gitRoot, folder, mainBranch, ignoredFolders));
 
             return gitChanges.Output
                 .Where(msg => !string.IsNullOrWhiteSpace(msg))

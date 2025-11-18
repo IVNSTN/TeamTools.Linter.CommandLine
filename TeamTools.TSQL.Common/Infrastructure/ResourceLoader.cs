@@ -12,7 +12,7 @@ namespace TeamTools.Common.Linting.Infrastructure
             this.Config = config;
         }
 
-        protected T Config { get; private set; }
+        protected T Config { get; }
 
         protected override void FillConfig(T config, JToken json)
         {
@@ -32,9 +32,11 @@ namespace TeamTools.Common.Linting.Infrastructure
             Debug.Assert(config != null, "config not set");
             Debug.Assert(json != null, "json not set");
 
-            var rulesTranslations = json.SelectTokens("..messages").ToList();
+            var rulesTranslations = json.SelectTokens("..messages")
+                .Children()
+                .OfType<JProperty>();
 
-            foreach (var configValue in rulesTranslations.Children().OfType<JProperty>())
+            foreach (var configValue in rulesTranslations)
             {
                 var ruleId = configValue.Name;
                 var ruleMessage = configValue.Value.ToString();

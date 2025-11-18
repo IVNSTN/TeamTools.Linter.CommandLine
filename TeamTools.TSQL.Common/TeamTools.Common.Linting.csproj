@@ -1,68 +1,41 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <Configurations>Debug;Release;Test</Configurations>
+    <TargetFrameworks>netstandard2.0;net6.0;net8.0</TargetFrameworks>
+    <OutputType>Library</OutputType>
+    <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
 
+  <!-- Packing options -->
   <PropertyGroup>
-    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-    <RestoreLockedMode Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</RestoreLockedMode>
-    <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+    <IsPackable>true</IsPackable>
+    <PackageOutputPath>../.nupkg</PackageOutputPath>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>./readme.md</PackageReadmeFile>
+    <PackageTags>StaticCodeAnalysis;CodeQuality;TeamTools</PackageTags>
   </PropertyGroup>
 
+  <!-- Dependencies -->
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 
-
-  <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
-
-  <Target Name="VSIXContainerProjectOutputGroup" Outputs="@(VSIXContainerOutputGroupOutput)" DependsOnTargets="$(VSIXContainerProjectOutputGroupDependsOn)">
-
-    <ItemGroup Condition="'$(CreateVsixContainer)'=='true'">
-      <_VSIXContainerOutputGroupOutput Include="$(TargetVsixContainer)" />
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(CreateVsixContainer)'=='true'">
-      <VSIXContainerOutputGroupOutput Include="@(_VSIXContainerOutputGroupOutput->'%(FullPath)')" />
-    </ItemGroup>
-  </Target>
-
-  <PropertyGroup>
-    <VSIXNameProjectOutputGroupDependsOn>$(VSIXIdentifierProjectOutputGroupDependsOn);</VSIXNameProjectOutputGroupDependsOn>
-  </PropertyGroup>
-
-  <Target Name="VSIXNameProjectOutputGroup" Outputs="@(VSIXNameProjectOutputGroup)" DependsOnTargets="$(VSIXNameProjectOutputGroupDependsOn)">
-
-    <PropertyGroup>
-      <_VSIXName></_VSIXName>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <VSIXNameProjectOutputGroup Include="$(_VSIXName)" />
-    </ItemGroup>
-  </Target>
-
-  <PropertyGroup>
-    <VSIXIdentifierProjectOutputGroupDependsOn>$(VSIXIdentifierProjectOutputGroupDependsOn);</VSIXIdentifierProjectOutputGroupDependsOn>
-  </PropertyGroup>
-
-  <Target Name="VSIXIdentifierProjectOutputGroup" Outputs="@(VSIXIdentifierProjectOutputGroup)" DependsOnTargets="$(VSIXIdentifierProjectOutputGroupDependsOn)">
-
-    <PropertyGroup>
-      <_VSIXIdentifier></_VSIXIdentifier>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <VSIXIdentifierProjectOutputGroup Include="$(_VSIXIdentifier)" />
-    </ItemGroup>
-  </Target>
-
+  <!-- Manual includes -->
   <ItemGroup>
-    <SourceRoot Include="$(MSBuildThisFileDirectory)/" />
+    <Content Include="readme.md" Pack="true" PackagePath="\" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\Strings.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Strings.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Strings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

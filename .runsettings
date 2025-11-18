@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <RunSettings>
-    <ResultsDirectory>.\TestResults</ResultsDirectory>
+    <ResultsDirectory>.\TSQLLinter\TestResults</ResultsDirectory>
     <TestSessionTimeout>10000</TestSessionTimeout>
 
     <DataCollectionRunSettings>
@@ -44,7 +44,7 @@
             </DataCollector>
         </DataCollectors>
     </DataCollectionRunSettings>
-    
+
     <NUnit>
         <UseParentFQNForParemetrizedTests>true</UseParentFQNForParemetrizedTests>
         <UseNUnitIdforTestCaseId>true</UseNUnitIdforTestCaseId>
