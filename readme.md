@@ -5,7 +5,7 @@
 
 ## Плагины
 
-Например, IVNSTN/TeamTools.Linter.TSQL для статического анализа кода на **T-SQL**.
+Например, [IVNSTN/TeamTools.Linter.TSQL](https://github.com/IVNSTN/TeamTools.Linter.TSQL) для статического анализа кода на **T-SQL**.
 Перечень плагинов необходимо указать в [конфигурационном файле](./TeamTools.Linter.CommandLine/DefaultConfig.json).
 
 ## Параметры
