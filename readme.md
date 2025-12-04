@@ -1,6 +1,9 @@
 ﻿
 # TeamTools Linter CommandLine
 
+[![License MIT](https://gist.githubusercontent.com/IVNSTN/905fc514e3cea426d51efae6b98ca4d5/raw/License-MIT-purple.svg)](./LICENSE)
+[![coverage](https://gist.githubusercontent.com/IVNSTN/905fc514e3cea426d51efae6b98ca4d5/raw/code-coverage.svg)](https://github.com/IVNSTN/TeamTools.Linter.CommandLine/actions)
+
 Утилита командной строки для выполнения линтинга с поддержкой подключаемых плагинов.
 
 ## Плагины

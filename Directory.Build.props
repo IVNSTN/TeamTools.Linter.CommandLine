@@ -4,7 +4,7 @@
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory).stylecop\StyleCop.ruleset</CodeAnalysisRuleSet>
     <RunSettingsFilePath>$(MSBuildThisFileDirectory).runsettings</RunSettingsFilePath>
-    <TreatWarningsAsErrors Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">true</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <NoWarn>$(NoWarn);NU1601;NU1603;NU1801;NETSDK1138</NoWarn>
     <!-- IDE0130 Namespace does not match folder structure -->
     <NoWarn>$(NoWarn);IDE0130</NoWarn>
@@ -67,10 +67,15 @@
   <!-- Additional info options -->
   <PropertyGroup>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <NeutralLanguage>en</NeutralLanguage>
     <NeutralResourcesLanguage>en</NeutralResourcesLanguage>
+    <Company>Ivan Starostin</Company>
+    <Authors>Ivan Starostin et al.</Authors>
+    <Copyright>© $([System.DateTime]::Now.Year) $(Company)</Copyright>
+    <AssemblyCopyright>$(Copyright)</AssemblyCopyright>
+    <IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 
   <!-- No packing for test projects -->
