@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       next-version: ${{ steps.next-ver.outputs.VERSION }}
-    
+
     steps:
     - uses: actions/checkout@v4
 
@@ -31,14 +31,14 @@ jobs:
         VERSION=$(date +%Y.%-m.${{ github.run_number }})
         echo Next version: $VERSION
         echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-    
+
   build:
     name: Build and test
     needs: semver
     runs-on: ${{ matrix.os }}
     outputs:
       build-result: ${{ steps.bundle-status.outputs.BUNDLE_STATUS }}
-    
+
     defaults:
       run:
         shell: bash
@@ -78,7 +78,7 @@ jobs:
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json', '**/*.csproj', 'Directory.Build.props') }} # Unique key for the cache
         restore-keys: |
           ${{ runner.os }}-nuget-
-    
+
     - name: Install coverlet
       run: |
            dotnet add package coverlet.msbuild --version 6.0.4 &&
@@ -152,14 +152,14 @@ jobs:
       with:
         name: ${{ env.PRODUCT_NAME }}-${{ needs.semver.outputs.next-version }}-${{ matrix.configuration }}-net8.0
         path: ${{ env.PUBLISH_PATH }}/${{ matrix.configuration }}/net8.0
-        
+
     - name: Test
       if: ${{ !matrix.coverage }}
       run: >
         dotnet test --no-build --verbosity normal
         -p:BaseOutputPath="${{ env.OUTPUT_PATH }}"
         --configuration ${{ matrix.configuration }}
-        --logger "trx;LogFileName=${{ github.workspace }}/TestResults/test-results.trx" 
+        --logger "trx;LogFileName=${{ github.workspace }}/TestResults/test-results.trx"
 
     - name: Test with coverage
       if: ${{ matrix.coverage }}
@@ -168,7 +168,7 @@ jobs:
         -p:CollectCoverage=true -p:CoverletOutput="${{ github.workspace }}/TestResults/" -p:CoverletOutputFormat=opencover /p:ExcludeByFile="**/TeamTools.TSQL.Common/**/*.cs"
         -p:BaseOutputPath="${{ env.OUTPUT_PATH }}"
         --configuration ${{ matrix.configuration }}
-        --logger "trx;LogFileName=${{ github.workspace }}/TestResults/test-results.trx" 
+        --logger "trx;LogFileName=${{ github.workspace }}/TestResults/test-results.trx"
 
     - name: Upload test artifacts
       uses: actions/upload-artifact@v4
@@ -176,7 +176,7 @@ jobs:
       with:
         name: test-results
         path: TestResults
-    
+
     - name: Test Report
       uses: dorny/test-reporter@v2
       if: ${{ !cancelled() }}       # run this step even if previous step failed
@@ -210,10 +210,10 @@ jobs:
         gist-filename: code-coverage.json
         gist-id: ${{ vars.GIST_COVERAGE_ID }}
         gist-auth-token: ${{ secrets.GIST_AUTH_TOKEN }}
-        
+
     - name: Create Coverage Badge
       uses: schneegans/dynamic-badges-action@v1.7.0
-      if: ${{ !cancelled() && hashFiles('TestResults/coverage.opencover.xml') != '' && steps.create_coverage_badge.outputs.percentage != '' }} 
+      if: ${{ !cancelled() && hashFiles('TestResults/coverage.opencover.xml') != '' && steps.create_coverage_badge.outputs.percentage != '' }}
       with:
         auth: ${{ secrets.GIST_AUTH_TOKEN }}
         gistID: ${{ vars.GIST_COVERAGE_ID }}
@@ -227,7 +227,7 @@ jobs:
     - name: Print code coverage
       if: steps.create_coverage_badge.outcome == 'success'
       run: echo "Code coverage percentage ${{steps.create_coverage_badge.outputs.percentage}}%"
-  
+
   repack-with-plugins:
     name: Repackage with plugins
     needs: [semver, build]
