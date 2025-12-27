@@ -5,9 +5,9 @@ name: Build .NET lib
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 env:
   PRODUCT_NAME: TeamTools.Linter.CommandLine
@@ -23,14 +23,14 @@ jobs:
       next-version: ${{ steps.next-ver.outputs.VERSION }}
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Prepare next version
-      id: next-ver
-      run: |
-        VERSION=$(date +%Y.%-m.${{ github.run_number }})
-        echo Next version: $VERSION
-        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+      - name: Prepare next version
+        id: next-ver
+        run: |
+          VERSION=$(date +%Y.%-m.${{ github.run_number }})
+          echo Next version: $VERSION
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
   build:
     name: Build and test
@@ -57,133 +57,133 @@ jobs:
             publish: true
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: |
-          3.1.x
-          6.0.x
-          8.0.x
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            3.1.x
+            6.0.x
+            8.0.x
 
-    - name: Display dotnet version
-      run: dotnet --info
+      - name: Display dotnet version
+        run: dotnet --info
 
-    - name: Cache NuGet packages
-      id: cache-nugets
-      uses: actions/cache@v4
-      with:
-        path: ${{ github.workspace }}/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json', '**/*.csproj', 'Directory.Build.props') }} # Unique key for the cache
-        restore-keys: |
-          ${{ runner.os }}-nuget-
+      - name: Cache NuGet packages
+        id: cache-nugets
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json', '**/*.csproj', 'Directory.Build.props') }} # Unique key for the cache
+          restore-keys: |
+            ${{ runner.os }}-nuget-
 
-    - name: Install coverlet
-      run: |
-           dotnet add package coverlet.msbuild --version 6.0.4 &&
-           dotnet add package coverlet.collector --version 6.0.4
-      working-directory: ${{ env.TEST_PROJECT }}
+      - name: Install coverlet
+        run: |
+          dotnet add package coverlet.msbuild --version 6.0.4 &&
+          dotnet add package coverlet.collector --version 6.0.4
+        working-directory: ${{ env.TEST_PROJECT }}
 
-    - name: Restore dependencies
-      # if: ${{ steps.cache-nugets.outputs.cache-hit != 'true' }}
-      run: dotnet restore --p:ContinuousIntegrationBuild=true
+      - name: Restore dependencies
+        # if: ${{ steps.cache-nugets.outputs.cache-hit != 'true' }}
+        run: dotnet restore --p:ContinuousIntegrationBuild=true
 
-    - name: Build
-      id: build
-      run: >
-        dotnet build --no-restore
-        --configuration ${{ matrix.configuration }}
-        -p:VersionPrefix=${{ needs.semver.outputs.next-version }}
-        -p:ContinuousIntegrationBuild=true
-        -p:SourceRevisionId=${{ github.sha }}
-        -p:RepositoryUrl="${{ github.repositoryUrl }}"
-        -p:RepositoryType=git
-        -p:RepositoryBranch="${{ github.ref_name }}"
-        -p:BaseOutputPath="${{ env.OUTPUT_PATH }}"
+      - name: Build
+        id: build
+        run: >
+          dotnet build --no-restore
+          --configuration ${{ matrix.configuration }}
+          -p:VersionPrefix=${{ needs.semver.outputs.next-version }}
+          -p:ContinuousIntegrationBuild=true
+          -p:SourceRevisionId=${{ github.sha }}
+          -p:RepositoryUrl="${{ github.repositoryUrl }}"
+          -p:RepositoryType=git
+          -p:RepositoryBranch="${{ github.ref_name }}"
+          -p:BaseOutputPath="${{ env.OUTPUT_PATH }}"
 
-    - name: Upload release bundle
-      id: upload-bundle
-      uses: actions/upload-artifact@v4
-      if: ${{ matrix.publish && steps.build.conclusion == 'success' }}
-      with:
-        name: bundle-${{ matrix.configuration }}
-        path: ${{ env.OUTPUT_PATH }}/${{ matrix.configuration }}
+      - name: Upload release bundle
+        id: upload-bundle
+        uses: actions/upload-artifact@v4
+        if: ${{ matrix.publish && steps.build.conclusion == 'success' }}
+        with:
+          name: bundle-${{ matrix.configuration }}
+          path: ${{ env.OUTPUT_PATH }}/${{ matrix.configuration }}
 
-    - name: Set bundle status
-      id: bundle-status
-      if: ${{ matrix.publish }}
-      run: |
-        echo "BUNDLE_STATUS=${{ steps.upload-bundle.conclusion }}" >> $GITHUB_OUTPUT
+      - name: Set bundle status
+        id: bundle-status
+        if: ${{ matrix.publish }}
+        run: |
+          echo "BUNDLE_STATUS=${{ steps.upload-bundle.conclusion }}" >> $GITHUB_OUTPUT
 
-    - name: Prepare publish package per framework
-      if: ${{ matrix.publish }}
-      run: >
-        dotnet publish "${{ env.PUBLISH_PROJECT_PATH }}" --no-build
-        -p:TargetFramework=netcoreapp3.1
-        -p:Configuration=${{ matrix.configuration }}
-        -p:BaseOutputPath="${{ env.OUTPUT_PATH }}"
-        -p:PublishDir="${{ env.PUBLISH_PATH }}/Release/netcoreapp3.1"
-        && dotnet publish "${{ env.PUBLISH_PROJECT_PATH }}" --no-build
-        -p:TargetFramework=net6.0
-        -p:Configuration=${{ matrix.configuration }}
-        -p:BaseOutputPath="${{ env.OUTPUT_PATH }}"
-        -p:PublishDir="${{ env.PUBLISH_PATH }}/Release/net6.0"
-        && dotnet publish "${{ env.PUBLISH_PROJECT_PATH }}" --no-build
-        -p:TargetFramework=net8.0
-        -p:Configuration=${{ matrix.configuration }}
-        -p:BaseOutputPath="${{ env.OUTPUT_PATH }}"
-        -p:PublishDir="${{ env.PUBLISH_PATH }}/Release/net8.0"
+      - name: Prepare publish package per framework
+        if: ${{ matrix.publish }}
+        run: >
+          dotnet publish "${{ env.PUBLISH_PROJECT_PATH }}" --no-build
+          -p:TargetFramework=netcoreapp3.1
+          -p:Configuration=${{ matrix.configuration }}
+          -p:BaseOutputPath="${{ env.OUTPUT_PATH }}"
+          -p:PublishDir="${{ env.PUBLISH_PATH }}/Release/netcoreapp3.1"
+          && dotnet publish "${{ env.PUBLISH_PROJECT_PATH }}" --no-build
+          -p:TargetFramework=net6.0
+          -p:Configuration=${{ matrix.configuration }}
+          -p:BaseOutputPath="${{ env.OUTPUT_PATH }}"
+          -p:PublishDir="${{ env.PUBLISH_PATH }}/Release/net6.0"
+          && dotnet publish "${{ env.PUBLISH_PROJECT_PATH }}" --no-build
+          -p:TargetFramework=net8.0
+          -p:Configuration=${{ matrix.configuration }}
+          -p:BaseOutputPath="${{ env.OUTPUT_PATH }}"
+          -p:PublishDir="${{ env.PUBLISH_PATH }}/Release/net8.0"
 
-    - name: Upload build for netcoreapp3.1
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ env.PRODUCT_NAME }}-${{ needs.semver.outputs.next-version }}-${{ matrix.configuration }}-netcoreapp3.1
-        path: ${{ env.PUBLISH_PATH }}/${{ matrix.configuration }}/netcoreapp3.1
+      - name: Upload build for netcoreapp3.1
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PRODUCT_NAME }}-${{ needs.semver.outputs.next-version }}-${{ matrix.configuration }}-netcoreapp3.1
+          path: ${{ env.PUBLISH_PATH }}/${{ matrix.configuration }}/netcoreapp3.1
 
-    - name: Upload build for net6.0
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ env.PRODUCT_NAME }}-${{ needs.semver.outputs.next-version }}-${{ matrix.configuration }}-net6.0
-        path: ${{ env.PUBLISH_PATH }}/${{ matrix.configuration }}/net6.0
+      - name: Upload build for net6.0
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PRODUCT_NAME }}-${{ needs.semver.outputs.next-version }}-${{ matrix.configuration }}-net6.0
+          path: ${{ env.PUBLISH_PATH }}/${{ matrix.configuration }}/net6.0
 
-    - name: Upload build for net8.0
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ env.PRODUCT_NAME }}-${{ needs.semver.outputs.next-version }}-${{ matrix.configuration }}-net8.0
-        path: ${{ env.PUBLISH_PATH }}/${{ matrix.configuration }}/net8.0
+      - name: Upload build for net8.0
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PRODUCT_NAME }}-${{ needs.semver.outputs.next-version }}-${{ matrix.configuration }}-net8.0
+          path: ${{ env.PUBLISH_PATH }}/${{ matrix.configuration }}/net8.0
 
-    - name: Test
-      if: ${{ !matrix.coverage }}
-      run: >
-        dotnet test --no-build --verbosity normal
-        -p:BaseOutputPath="${{ env.OUTPUT_PATH }}"
-        --configuration ${{ matrix.configuration }}
-        --logger "trx;LogFileName=${{ github.workspace }}/TestResults/test-results.trx"
+      - name: Test
+        if: ${{ !matrix.coverage }}
+        run: >
+          dotnet test --no-build --verbosity normal
+          -p:BaseOutputPath="${{ env.OUTPUT_PATH }}"
+          --configuration ${{ matrix.configuration }}
+          --logger "trx;LogFileName=${{ github.workspace }}/TestResults/test-results.trx"
 
-    - name: Test with coverage
-      if: ${{ matrix.coverage }}
-      run: >
-        dotnet test --no-build --verbosity normal
-        -p:CollectCoverage=true -p:CoverletOutput="${{ github.workspace }}/TestResults/" -p:CoverletOutputFormat=opencover /p:ExcludeByFile="**/TeamTools.TSQL.Common/**/*.cs"
-        -p:BaseOutputPath="${{ env.OUTPUT_PATH }}"
-        --configuration ${{ matrix.configuration }}
-        --logger "trx;LogFileName=${{ github.workspace }}/TestResults/test-results.trx"
+      - name: Test with coverage
+        if: ${{ matrix.coverage }}
+        run: >
+          dotnet test --no-build --verbosity normal
+          -p:CollectCoverage=true -p:CoverletOutput="${{ github.workspace }}/TestResults/" -p:CoverletOutputFormat=opencover /p:ExcludeByFile="**/TeamTools.TSQL.Common/**/*.cs"
+          -p:BaseOutputPath="${{ env.OUTPUT_PATH }}"
+          --configuration ${{ matrix.configuration }}
+          --logger "trx;LogFileName=${{ github.workspace }}/TestResults/test-results.trx"
 
-    - name: Upload test artifacts
-      uses: actions/upload-artifact@v4
-      if: ${{ matrix.coverage }}
-      with:
-        name: test-results
-        path: TestResults
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: ${{ matrix.coverage }}
+        with:
+          name: test-results
+          path: TestResults
 
-    - name: Test Report
-      uses: dorny/test-reporter@v2
-      if: ${{ !cancelled() }}       # run this step even if previous step failed
-      with:
-        name: NUnit testing ${{ matrix.configuration }} build on ${{ matrix.os }}
-        path: '**/TestResults/*.trx,*.trx'
-        reporter: dotnet-trx
+      - name: Test Report
+        uses: dorny/test-reporter@v2
+        if: ${{ !cancelled() }} # run this step even if previous step failed
+        with:
+          name: NUnit testing ${{ matrix.configuration }} build on ${{ matrix.os }}
+          path: "**/TestResults/*.trx,*.trx"
+          reporter: dotnet-trx
 
   report:
     name: Update badges
@@ -192,41 +192,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Download test results
-      uses: actions/download-artifact@v4
-      with:
-        name: test-results
-        path: TestResults
+      - uses: actions/checkout@v4
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results
+          path: TestResults
 
-    - name: Extract coverage info
-      uses: simon-k/dotnet-code-coverage-badge@v1.0.0
-      id: create_coverage_badge
-      if: ${{ !cancelled() && hashFiles('TestResults/coverage.opencover.xml') != '' }}
-      with:
-        label: Unit Test Coverage
-        color: brightgreen
-        path: TestResults/coverage.opencover.xml
-        gist-filename: code-coverage.json
-        gist-id: ${{ vars.GIST_COVERAGE_ID }}
-        gist-auth-token: ${{ secrets.GIST_AUTH_TOKEN }}
+      - name: Extract coverage info
+        uses: simon-k/dotnet-code-coverage-badge@v1.0.0
+        id: create_coverage_badge
+        if: ${{ !cancelled() && hashFiles('TestResults/coverage.opencover.xml') != '' }}
+        with:
+          label: Unit Test Coverage
+          color: brightgreen
+          path: TestResults/coverage.opencover.xml
+          gist-filename: code-coverage.json
+          gist-id: ${{ vars.GIST_COVERAGE_ID }}
+          gist-auth-token: ${{ secrets.GIST_AUTH_TOKEN }}
 
-    - name: Create Coverage Badge
-      uses: schneegans/dynamic-badges-action@v1.7.0
-      if: ${{ !cancelled() && hashFiles('TestResults/coverage.opencover.xml') != '' && steps.create_coverage_badge.outputs.percentage != '' }}
-      with:
-        auth: ${{ secrets.GIST_AUTH_TOKEN }}
-        gistID: ${{ vars.GIST_COVERAGE_ID }}
-        filename: code-coverage.svg
-        label: Coverage
-        message: ${{ steps.create_coverage_badge.outputs.percentage }}%
-        valColorRange: ${{ steps.create_coverage_badge.outputs.percentage }}
-        maxColorRange: 100
-        minColorRange: 0
+      - name: Create Coverage Badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        if: ${{ !cancelled() && hashFiles('TestResults/coverage.opencover.xml') != '' && steps.create_coverage_badge.outputs.percentage != '' }}
+        with:
+          auth: ${{ secrets.GIST_AUTH_TOKEN }}
+          gistID: ${{ vars.GIST_COVERAGE_ID }}
+          filename: code-coverage.svg
+          label: Coverage
+          message: ${{ steps.create_coverage_badge.outputs.percentage }}%
+          valColorRange: ${{ steps.create_coverage_badge.outputs.percentage }}
+          maxColorRange: 100
+          minColorRange: 0
 
-    - name: Print code coverage
-      if: steps.create_coverage_badge.outcome == 'success'
-      run: echo "Code coverage percentage ${{steps.create_coverage_badge.outputs.percentage}}%"
+      - name: Print code coverage
+        if: steps.create_coverage_badge.outcome == 'success'
+        run: echo "Code coverage percentage ${{steps.create_coverage_badge.outputs.percentage}}%"
 
   repack-with-plugins:
     name: Repackage with plugins
@@ -248,49 +248,49 @@ jobs:
             app-dotnet: netcoreapp3.1
 
     steps:
-    - name: Grab CLI ${{ matrix.app-dotnet }}
-      id: cli
-      uses: actions/download-artifact@v4
-      with:
-        name: ${{ env.PRODUCT_NAME }}-${{ needs.semver.outputs.next-version }}-${{ matrix.configuration }}-${{ matrix.app-dotnet }}
-        path: ${{ env.PRODUCT_NAME }}-${{ needs.semver.outputs.next-version }}-${{ matrix.configuration }}-${{ matrix.app-dotnet }}
+      - name: Grab CLI ${{ matrix.app-dotnet }}
+        id: cli
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.PRODUCT_NAME }}-${{ needs.semver.outputs.next-version }}-${{ matrix.configuration }}-${{ matrix.app-dotnet }}
+          path: ${{ env.PRODUCT_NAME }}-${{ needs.semver.outputs.next-version }}-${{ matrix.configuration }}-${{ matrix.app-dotnet }}
 
-    - name: Grab TSQL plugin ${{ matrix.dotnet }}
-      uses: dawidd6/action-download-artifact@v11
-      with:
-        github_token: ${{secrets.GITHUB_TOKEN}}
-        repo: IVNSTN/TeamTools.Linter.TSQL
-        workflow: ci.yml
-        workflow_conclusion: completed
-        branch: main
-        name: TeamTools\.Linter\.TSQL-[\d.]+-${{ matrix.configuration }}-${{ matrix.dotnet }}
-        name_is_regexp: true
-        path: ${{ steps.cli.outputs.download-path }}/Plugins
+      - name: Grab TSQL plugin ${{ matrix.dotnet }}
+        uses: dawidd6/action-download-artifact@v11
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          repo: IVNSTN/TeamTools.Linter.TSQL
+          workflow: ci.yml
+          workflow_conclusion: completed
+          branch: main
+          name: TeamTools\.Linter\.TSQL-[\d.]+-${{ matrix.configuration }}-${{ matrix.dotnet }}
+          name_is_regexp: true
+          path: ${{ steps.cli.outputs.download-path }}/Plugins
 
-    - name: Grab SSDT plugin for ${{ matrix.dotnet }}
-      uses: dawidd6/action-download-artifact@v11
-      with:
-        github_token: ${{secrets.GITHUB_TOKEN}}
-        repo: IVNSTN/TeamTools.Linter.SSDT
-        workflow: ci.yml
-        workflow_conclusion: completed
-        branch: main
-        name: TeamTools\.Linter\.SSDT-[\d.]+-${{ matrix.configuration }}-${{ matrix.dotnet }}
-        name_is_regexp: true
-        path: ${{ steps.cli.outputs.download-path }}/Plugins
+      - name: Grab SSDT plugin for ${{ matrix.dotnet }}
+        uses: dawidd6/action-download-artifact@v11
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          repo: IVNSTN/TeamTools.Linter.SSDT
+          workflow: ci.yml
+          workflow_conclusion: completed
+          branch: main
+          name: TeamTools\.Linter\.SSDT-[\d.]+-${{ matrix.configuration }}-${{ matrix.dotnet }}
+          name_is_regexp: true
+          path: ${{ steps.cli.outputs.download-path }}/Plugins
 
-    - name: Remove version info from plugin folder names
-      run: |
-        cd "${{ steps.cli.outputs.download-path }}/Plugins"
-        for dir in TeamTools.Linter.TSQL* ; do
-          mv "${dir}" "TeamTools.Linter.TSQL";
-        done
-        for dir in TeamTools.Linter.SSDT* ; do
-          mv "${dir}" "TeamTools.Linter.SSDT";
-        done
+      - name: Remove version info from plugin folder names
+        run: |
+          cd "${{ steps.cli.outputs.download-path }}/Plugins"
+          for dir in TeamTools.Linter.TSQL* ; do
+            mv "${dir}" "TeamTools.Linter.TSQL";
+          done
+          for dir in TeamTools.Linter.SSDT* ; do
+            mv "${dir}" "TeamTools.Linter.SSDT";
+          done
 
-    - name: Upload repack
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ env.PRODUCT_NAME }}-${{ needs.semver.outputs.next-version }}-${{ matrix.configuration }}-${{ matrix.app-dotnet }}-with-plugins-TSQL-SSDT
-        path: ${{ steps.cli.outputs.download-path }}
+      - name: Upload repack
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PRODUCT_NAME }}-${{ needs.semver.outputs.next-version }}-${{ matrix.configuration }}-${{ matrix.app-dotnet }}-with-plugins-TSQL-SSDT
+          path: ${{ steps.cli.outputs.download-path }}

@@ -1,0 +1,150 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "files.encoding": "utf8bom",
+    "files.eol": "\r\n",
+    "files.trimTrailingWhitespace": true,
+    "files.associations": {
+      ".*rc": "json",
+      ".code-workspace": "json",
+      "app.config": "xml",
+      "Nuget.Config": "xml"
+    },
+    "[xml]": {
+      "editor.tabSize": 2
+    },
+    "editor.insertSpaces": true,
+    "editor.formatOnSave": true,
+    "[powershell]": {
+      "editor.tabSize": 4,
+      "editor.defaultFormatter": "ms-vscode.powershell"
+    },
+    "[markdown]": {
+      "editor.wordWrap": "on",
+      "editor.quickSuggestions": {
+        "comments": "off",
+        "strings": "off",
+        "other": "off"
+      },
+      "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+    },
+    "[json]": {
+      "editor.quickSuggestions": {
+        "strings": true
+      },
+      "editor.suggest.insertMode": "replace",
+      "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "markdownlint.config": {
+      "MD033": {
+        "allowed_elements": ["p"],
+        "MD012": false, // extra line [2 empty lines]
+        "MD013": false // line length
+      },
+      "MD055": false, // tables
+      "MD004": {
+        "style": "dash" // List style
+      }
+    },
+    "[shellscript]": {
+      "files.encoding": "utf8",
+      "editor.tabSize": 4
+    },
+    "powershell.codeFormatting.useCorrectCasing": true,
+    "powershell.codeFormatting.whitespaceBetweenParameters": true,
+    "powershell.integratedConsole.suppressStartupBanner": true,
+    "powershell.integratedConsole.showOnStartup": false,
+    "powershell.scriptAnalysis.settingsPath": "./.vscode/PSScriptAnalyzerSettings.psd1",
+    "powershell.codeFormatting.pipelineIndentationStyle": "IncreaseIndentationForFirstPipeline",
+    "powershell.developer.editorServicesLogLevel": "Warning",
+    "files.exclude": {
+      "**/.vs/": true,
+      "**/*.orig": true,
+      "**/*.~*": true,
+      "**/*_i.c": true,
+      "**/*_p.c": true,
+      "**/*_h.h": true,
+      "**/*.ilk": true,
+      "**/*.meta": true,
+      "**/*.obj": true,
+      "**/*.iobj": true,
+      "**/*.pch": true,
+      "**/*.pdb": true,
+      "**/*.ipdb": true,
+      "**/*.pgc": true,
+      "**/*.pgd": true,
+      "**/*.rsp": true,
+      "**/*.sbr": true,
+      "**/*.tlb": true,
+      "**/*.tli": true,
+      "**/*.tlh": true,
+      "**/*.tmp": true,
+      "**/*.tmp_proj": true,
+      "**/*_wpftmp.csproj": true,
+      "**/*.log": true,
+      "**/*.vspscc": true,
+      "**/*.vssscc": true,
+      "**/.builds": true,
+      "**/*.pidb": true,
+      "**/*.svclog": true,
+      "**/*.scc": true,
+      "**/*.jfm": true,
+      "**/*.dbmdl": true,
+      "**/*.psess": true,
+      "**/*.vsp": true,
+      "**/*.vspx": true,
+      "**/*.sap": true,
+      "**/*.e2e": true,
+      "**/$tf/": true,
+      "**/*.rsuser": true,
+      "**/*.suo": true,
+      "**/*.user": true,
+      "**/*.userosscache": true,
+      "**/*.sln.docstates": true,
+      "packages/": true,
+      "**/TestResults/": true,
+      ".nupkg/": true,
+      "**/bin/": true,
+      "**/obj/": true,
+      "**/packages.lock.json": true
+    },
+    "powershell.codeFormatting.avoidSemicolonsAsLineTerminators": true,
+    "files.insertFinalNewline": true,
+    "testExplorer.addToEditorContextMenu": true,
+    "testExplorer.useNativeTesting": true,
+    "dotnet.defaultSolution": "TSQLLinter.sln",
+    "dotnet.unitTests.runSettingsPath": "${workspaceFolder}/.runsettings",
+    "dotnet.projects.enableAutomaticRestore": false,
+    "csharp.suppressDotnetRestoreNotification": true,
+    "testing.alwaysRevealTestOnStateChange": true,
+    "nuget.autoOpenOutputWindowOnRestore": "on",
+    "dotnet-test-explorer.testProjectPath": "**/*Tests.csproj",
+    "nunitTestRunner.projectsPatterns": [
+      "**/bin/*.Tests.dll",
+      "**/bin/*Tests.dll",
+      "**/bin/**/*Tests.dll"
+    ],
+    "editor.detectIndentation": false,
+    "json.format.keepLines": true,
+    "terminal.integrated.env.windows": {
+      // To prevent weird values from local computer environment variables.
+      // This will be converted into "Any CPU" by Directory.Build.props
+      "PLATFORM": ""
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "yzhang.markdown-all-in-one",
+      "davidanson.vscode-markdownlint",
+      "esbenp.prettier-vscode",
+      "dbaeumer.vscode-eslint",
+      "ms-vscode.test-adapter-converter",
+      "hbenl.vscode-test-explorer",
+      "timonwong.shellcheck"
+    ]
+  }
+}

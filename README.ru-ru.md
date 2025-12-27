@@ -2,7 +2,9 @@
 # TeamTools Linter CommandLine
 
 [![License MIT](https://gist.githubusercontent.com/IVNSTN/905fc514e3cea426d51efae6b98ca4d5/raw/License-MIT-purple.svg)](./LICENSE)
-[![coverage](https://gist.githubusercontent.com/IVNSTN/905fc514e3cea426d51efae6b98ca4d5/raw/code-coverage.svg)](https://github.com/IVNSTN/TeamTools.Linter.CommandLine/actions)
+[![Coverage](https://gist.githubusercontent.com/IVNSTN/905fc514e3cea426d51efae6b98ca4d5/raw/code-coverage.svg)](https://github.com/IVNSTN/TeamTools.Linter.CommandLine/actions)
+
+[\[English en-us\]](./README.md) [\[Русский ru-ru\]](./README.ru-ru.md)
 
 Утилита командной строки для выполнения линтинга с поддержкой подключаемых плагинов.
 
@@ -35,7 +37,7 @@
 ### Линтинг диффа по каталогу
 
 ```cmd
-.\TeamTools.Linter.CommandLine.exe --dir "c:\source\my_project"  --diff
+.\TeamTools.Linter.CommandLine.exe --dir "c:\source\my_project" --diff
 ```
 
 Дифф вычисляется по Git относительно главной ветки, в итоге сканируются только изменённые файлы. Имя главной ветки можно указать в конфигурационном файле.
@@ -49,17 +51,17 @@
 ### Линтинг всех файлов директории без учета info-сообщений
 
 ```cmd
-.\TeamTools.Linter.CommandLine.exe --dir "c:\source\my_project"  --severity warning
+.\TeamTools.Linter.CommandLine.exe --dir "c:\source\my_project" --severity warning
 ```
 
 ## Интеграция
 
 Утилитой можно пользоваться напрямую, вызывая её в терминале, а можно встроить в некоторые инструменты.
 
-### SSMS External Tool
+### SSMS Внешний инструмент
 
-Выполнить линтинг файла, открытого в текущей вкладке SSM можно с помощью настраиваемого пункта меню.
-Для создания нового пункта меню зайдите в Tools / External Tools, добавьте новый элемент и настройте как показано ниже.
+Выполнить линтинг файла, открытого в текущей вкладке SSMS можно с помощью настраиваемого пункта меню.
+Для создания нового пункта меню зайдите в Сервис / Внешние инструменты, добавьте новый элемент и настройте как показано ниже.
 
 ```ini
 Command           = <path to exe>\TeamTools.Linter.CommandLine.exe
@@ -72,7 +74,7 @@ Use output window = поставьте галочку
 
 Теперь можно линтить файл в открытой вкладке SSMS: нажмите правой клавишей мыши на заголовке открытой вкладки и выберите пункт меню, название которого выбрали для только что добавленного элемента "External tools".
 
-## Visual Studio External Tool
+### Visual Studio Внешний инструмент
 
 Настройка команды для линтинга конкретного файла аналогична приведенной выше для SSMS, здесь же приводится пример
 для поиска стопперов во всём имеющемся диффе с главной веткой в текущем репозитории:
@@ -84,15 +86,18 @@ Initial directory = $(SolutionDir)
 Use output window = поставьте галочку
 ```
 
-### SourceTree Custom Action
+### SourceTree Пользовательское действие
 
-Откройте пункт меню Tools/Options в SourceTree, выберите вкладку "Custom actions" и добавьте новый элемент в список. Далее введите полный путь к исполняемому файлу линтера в поле "Script to run" и приведенную ниже строку в поле "Parameter":
+Откройте пункт меню Инструменты / Настройки в SourceTree, выберите вкладку "Пользовательские действия" и добавьте новый элемент в список.
+Далее введите полный путь к исполняемому файлу линтера в поле "Исполняемый файл" и приведенную ниже строку в поле "Параметры":
 
-`--file "$REPO\$FILE" --severity warning --verbose`
+```
+--file "$REPO\$FILE" --severity warning --verbose
+```
 
 Теперь можно линтить выбранный файл прямо из интерфейса **SourceTree**.
 
-### GIT hook
+### GIT хук
 
 Измененные файлы можно автоматически линтить перед пушем или даже перед коммитом. Для этого добавьте в соответствующее событие вызов скрипта, пример которого приведен ниже.
 В качестве первого и единственного параметра передайте ему полный путь к папке, в которой находится `TeamTools.Linter.CommandLine.exe`
@@ -102,10 +107,10 @@ Use output window = поставьте галочку
 #!/bin/bash
 
 linter_folder="$1"
-echo "linter: $linter_folder"
+echo "линтер: $linter_folder"
 
 repo_path="$(git rev-parse --show-toplevel)"
-echo "repository: $repo_path"
+echo "репозиторий: $repo_path"
 
 "$linter_folder/TeamTools.Linter.CommandLine.exe" \
     --config "$linter_folder/DefaultConfig.json" \
@@ -120,14 +125,15 @@ last_exit_code=$?
 
 if [ $last_exit_code -ne 0 ]; then
     echo "======="
-    echo "Linting failed. See errors and warnings above."
-    echo "All the stoppers must be fixed before pushing branch to server."
+    echo "Линтинг не пройден. Обратите внимание на сообщения выше."
+    echo "Все замечания-стопперы должны быть исправлены до отправки ветки на сервер"
     echo "======="
 
     exit $last_exit_code
 fi
 ```
 
-### CI pipeline
+### CI пайплайн
 
-В пайплайн сборки утилита интегрируется схожим образом: сконструируйте консольный вызов с нужными параметрами и добавьте этот вызов в качестве шага пайплайна. Если не нужно, чтобы обнаружение замечаний роняло билд (например вы отдаете принятие решения на откуп Quality Gate в SonarQube), то добавьте параметр `--quiet` и тогда ExitCode всегда будет 0.
+В пайплайн сборки утилита интегрируется схожим образом: сконструируйте консольный вызов с нужными параметрами и добавьте этот вызов в качестве шага пайплайна.
+Если не нужно, чтобы обнаружение замечаний роняло билд (например вы отдаете принятие решения на откуп Quality Gate в SonarQube), то добавьте параметр `--quiet` и тогда ExitCode всегда будет 0.
