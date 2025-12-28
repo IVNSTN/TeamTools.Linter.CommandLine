@@ -1,23 +1,29 @@
 ﻿using CommandLine;
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.IO;
 using TeamTools.TSQL.Linter.CommandLine.Config;
 
 namespace TeamTools.TSQL.Linter.CommandLineTests
 {
     [Category("Linter.ConsoleExe")]
-    public class CommandLintOptionsTests
+    public class CommandLineOptionsTests
     {
         private Dictionary<string, List<string>> argVariants;
+#if Windows
+        private const string BasePath = @"c:\";
+#else
+        private const string BasePath = @"/home/";
+#endif
 
         [SetUp]
         public void Setup()
         {
             argVariants = new Dictionary<string, List<string>>
             {
-                { "scan dir", new List<string> { "--config", "c:\\conf.json", "--dir", "c:\\src" } },
-                { "scan file", new List<string> { "--config", "c:\\conf.json", "--file", "c:\\src\\file.sql" } },
-                { "scan diff", new List<string> { "--config", "c:\\conf.json", "--dir", "c:\\src\\proj", "--diff", "--format", "json", "--basepath", "c:\\src", "--output", "c:\\report.json", "--verbose" } },
+                { "scan dir", new List<string> { "--config", BasePath + "conf.json", "--dir", BasePath + "src" } },
+                { "scan file", new List<string> { "--config", BasePath + "conf.json", "--file", Path.Combine(BasePath, "src", "file.sql") } },
+                { "scan diff", new List<string> { "--config", BasePath + "conf.json", "--dir", Path.Combine(BasePath, "src", "proj"), "--diff", "--format", "json", "--basepath", BasePath + "src", "--output", BasePath + "report.json", "--verbose" } },
             };
         }
 
@@ -42,10 +48,10 @@ namespace TeamTools.TSQL.Linter.CommandLineTests
                 .WithNotParsed(err => Assert.Fail(string.Join(";", err)));
 
             Assert.That(parsedOpts, Is.Not.Null);
-            Assert.That(parsedOpts.ConfigFile, Is.EqualTo("c:\\conf.json"));
-            Assert.That(parsedOpts.DirectoryName, Is.EqualTo("c:\\src\\proj"));
-            Assert.That(parsedOpts.BasePath, Is.EqualTo("c:\\src"));
-            Assert.That(parsedOpts.OutputFile, Is.EqualTo("c:\\report.json"));
+            Assert.That(parsedOpts.ConfigFile, Is.EqualTo(BasePath + "conf.json"));
+            Assert.That(parsedOpts.DirectoryName, Is.EqualTo(Path.Combine(BasePath, "src", "proj")));
+            Assert.That(parsedOpts.BasePath, Is.EqualTo(BasePath + "src"));
+            Assert.That(parsedOpts.OutputFile, Is.EqualTo(BasePath + "report.json"));
             Assert.That(parsedOpts.Format, Is.EqualTo(OutputFileFormat.JSON));
             Assert.That(string.IsNullOrEmpty(parsedOpts.FileListSource), Is.True);
             Assert.That(string.IsNullOrEmpty(parsedOpts.FileName), Is.True);

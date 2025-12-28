@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using TeamTools.Common.Linting;
@@ -29,22 +30,27 @@ namespace TeamTools.TSQL.Linter.CommandLineTests
             reporter.ReportResults();
 
             // ToList, ToArray returns elements in reversed order
-            Assert.That(writer.ToString(), Is.EqualTo("error: issue2\r\nerror: issue1\r\n"));
+            Assert.That(writer.ToString(), Is.EqualTo(string.Join(Environment.NewLine, "error: issue2", "error: issue1", "")));
         }
 
         [Test]
         public void TestJsonReportFormatterOutput()
         {
+#if Windows
+            const string basePath = @"c:\";
+#else
+            const string basePath = @"/home/";
+#endif
             string expectedOutput = @"{'LINT':{'language':'TSQL','files':[{'name':'filename.txt','issues':[{'line':2,'col':3,'reason':'Failure','evidence':'','category':'CODE_SMELL','severity':'MAJOR','rule':'RULEID'}]}]}}"
                 .Replace('\'', '"');
-            var formatter = new JsonReportFormatter(@"c:\test");
+            var formatter = new JsonReportFormatter(Path.Combine(basePath, "test"));
             var output = new StringWriter();
             var issues = new List<RuleViolation>();
             issues.Add(new RuleViolation
             {
                 Line = 2,
                 Column = 3,
-                FileName = @"c:\test\filename.txt",
+                FileName = Path.Combine(basePath, "test", "filename.txt"),
                 RuleId = "RULEID",
                 Text = "Failure",
             });

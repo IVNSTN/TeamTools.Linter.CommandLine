@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using System.IO;
 using TeamTools.Common.Linting;
 using TeamTools.Common.Linting.Infrastructure;
 using TeamTools.TSQL.Linter.CommandLine.Config;
@@ -15,7 +16,8 @@ namespace TeamTools.TSQL.Linter.CommandLineTests
             var asm = new AssemblyWrapper();
             var cfg = new ConfigHandler(asm, new AppConfigLoader(fs, asm), fs);
 
-            cfg.LoadFromFile(@".\DefaultConfig.json");
+            // Relative path to config should be successfully revealed
+            cfg.LoadFromFile(Path.Combine(".", "DefaultConfig.json"));
 
             Assert.Multiple(() =>
             {

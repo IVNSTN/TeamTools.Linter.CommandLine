@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using System.Collections.Generic;
+using System.IO;
 using TeamTools.Common.Linting;
 using TeamTools.TSQL.Linter.CommandLine.Infrastructure;
 using TeamTools.TSQL.Linter.CommandLineTests.TestingInfrastructure;
@@ -34,7 +35,11 @@ namespace TeamTools.TSQL.Linter.CommandLineTests
             var files = new ListedFileEnumerator(fs, "subfolder", "srcfile");
             var fileList = string.Join(";", files.EnumFiles());
 
-            Assert.That(fileList, Is.EqualTo("subfolder\\line1;subfolder\\line2"));
+            // Replace is to respect different platforms
+            var expectedValue = "subfolder\\line1;subfolder\\line2";
+            expectedValue = expectedValue.Replace('\\', Path.DirectorySeparatorChar);
+
+            Assert.That(fileList, Is.EqualTo(expectedValue));
         }
 
         [Test]
