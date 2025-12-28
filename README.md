@@ -97,7 +97,7 @@ Use output window = check this box
 3. Enter the full path to the linter executable in **Script to run**.
 4. Enter the following in **Parameter**:
 
-```
+```cmd
 --file "$REPO\$FILE" --severity warning --verbose
 ```
 
