@@ -78,6 +78,18 @@
     <IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 
+  <!-- Target OS related flags -->
+  <PropertyGroup>
+    <IsWindows Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true'">true</IsWindows>
+    <IsLinux Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' == 'true'">true</IsLinux>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(IsWindows)'=='true'">
+     <DefineConstants>Windows</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(IsLinux)'=='true'">
+    <DefineConstants>Linux</DefineConstants>
+  </PropertyGroup>
+
   <!-- No packing for test projects -->
   <PropertyGroup Condition="'$(IsTestProject)'=='true'">
     <IsPackable>false</IsPackable>
@@ -101,6 +113,6 @@
     </PackageReference>
     <None Include="$(MSBuildProjectDirectory)\packages.lock.json" Visible="false" />
     <!-- Newer version helps better resolving common dll dependencies -->
-    <PackageReference Include="Microsoft.NETCore.Platforms" Version="7.0.4"  Condition="'$(IsTestProject)' != 'true'" />
+    <PackageReference Include="Microsoft.NETCore.Platforms" Version="7.0.4" Condition="'$(IsTestProject)' != 'true'" />
   </ItemGroup>
 </Project>

@@ -8,6 +8,12 @@ on:
     branches: ["main"]
   pull_request:
     branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        description: 'Branch to run on'
+        required: true
+        default: 'main'
 
 env:
   PRODUCT_NAME: TeamTools.Linter.CommandLine
@@ -185,6 +191,27 @@ jobs:
           path: "**/TestResults/*.trx,*.trx"
           reporter: dotnet-trx
 
+  validate-markdown:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+
+      - name: Install markdownlint
+        run: >
+          npm install markdownlint-cli2 --global
+
+      - name: Run linting
+        run: >
+          markdownlint-cli2
+          "**/*.md"
+          "!node_modules"
+          "!packages"
+          --config ${{ github.workspace }}/.markdownlint.jsonc
+
   report:
     name: Update badges
     needs: [build]
@@ -230,7 +257,7 @@ jobs:
 
   repack-with-plugins:
     name: Repackage with plugins
-    needs: [semver, build]
+    needs: [semver, build, validate-markdown]
     if: ${{ always() && needs.build.outputs.build-result == 'success' }}
     runs-on: ubuntu-latest
 

@@ -1,0 +1,13 @@
+{
+    "default": true, // Default state for all rules
+    "MD012": false, // extra line [2 empty lines]
+    "MD013": false, // line length
+    "MD033": {
+        "allowed_elements": [ "p" ]
+    },
+    "MD055": false, // tables
+    "MD060": false, // table column style
+    "MD004": {
+        "style": "dash" // List style
+    }
+}
