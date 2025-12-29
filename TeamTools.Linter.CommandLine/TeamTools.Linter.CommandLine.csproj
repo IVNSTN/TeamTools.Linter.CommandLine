@@ -25,7 +25,7 @@
     <!-- Later framework version contain the System.Text.Encoding.CodePages library.
     Also newer versions lead to unexpected troubles in runtime.
     Thus including it for netstandard2.0 only and with very old version number. -->
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="7.0.0" PrivateAssets="All" Condition="$(targetFramework)=='netcoreapp3.1'" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="7.0.0" Condition="$(targetFramework)=='netcoreapp3.1'" />
     <ProjectReference Include="..\TeamTools.TSQL.Common\TeamTools.Common.Linting.csproj" />
   </ItemGroup>
 
