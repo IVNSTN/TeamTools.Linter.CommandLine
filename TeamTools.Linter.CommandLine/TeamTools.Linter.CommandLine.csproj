@@ -33,6 +33,7 @@
   <ItemGroup>
     <Content Include="..\LICENSE" Pack="true" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="DefaultConfig.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="EvaluateConfig.json" CopyToOutputDirectory="PreserveNewest" />
     <Folder Include="plugins\" />
   </ItemGroup>
 

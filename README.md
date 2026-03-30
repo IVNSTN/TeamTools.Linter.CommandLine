@@ -17,6 +17,7 @@ The list of plugins must be specified in the [configuration file](./TeamTools.Li
 
 | Parameter | Shortcut | Description |
 |-----------|----------|-------------|
+| `--evaluate` | — | Evaluate mode to test linter features. It uses severity = warning and EvaluateConfig.json |
 | `--config` | `-c` | Path to the configuration file |
 | `--dir` | `-d` | Path to a directory containing files to be linted |
 | `--file` | `-f` | Path to a single file to be linted |
@@ -33,6 +34,17 @@ The list of plugins must be specified in the [configuration file](./TeamTools.Li
 | `--help` | — | Display the list of parameters |
 
 ## Usage Examples
+
+### 🚀 First time run to evaluate linter features and capabilities
+
+```cmd
+.\TeamTools.Linter.CommandLine.exe --dir "c:\source\my_project" --evaluate
+```
+
+Evaluate-mode raises minimal severity to `warning` and forces `EvaluateConfig.json` to be used.
+Use this mode to find significant violations in a project which has never been analyzed by this linter before
+to test if the linter suffices your needs. Rules related to formatting standard, naming convention and such
+are disabled in this mode.
 
 ### Linting diff for a directory
 
