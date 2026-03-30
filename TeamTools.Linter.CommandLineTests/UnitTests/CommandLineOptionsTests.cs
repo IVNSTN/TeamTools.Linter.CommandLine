@@ -9,12 +9,13 @@ namespace TeamTools.TSQL.Linter.CommandLineTests
     [Category("Linter.ConsoleExe")]
     public class CommandLineOptionsTests
     {
-        private Dictionary<string, List<string>> argVariants;
 #if Windows
         private const string BasePath = @"c:\";
 #else
         private const string BasePath = @"/home/";
 #endif
+
+        private Dictionary<string, List<string>> argVariants;
 
         [SetUp]
         public void Setup()

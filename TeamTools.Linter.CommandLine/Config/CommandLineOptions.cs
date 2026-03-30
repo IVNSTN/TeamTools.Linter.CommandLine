@@ -8,6 +8,7 @@ namespace TeamTools.TSQL.Linter.CommandLine.Config
     public class CommandLineOptions
     {
         private string configFile = SanitizePath(Path.Combine(AppContext.BaseDirectory, "DefaultConfig.json"));
+        private string evaluateConfigFile = SanitizePath(Path.Combine(AppContext.BaseDirectory, "EvaluateConfig.json"));
         private string directoryName;
         private string fileName;
         private string fileListSource;
@@ -249,6 +250,23 @@ namespace TeamTools.TSQL.Linter.CommandLine.Config
             Hidden = true, // to prevent dup option info in --help screen
             HelpText = "Show current version")]
         public bool Version { get; set; }
+
+        [Option(
+            longName: "evaluate",
+            Required = false,
+            Default = false,
+            HelpText = "Use this option for first run to detect significant violations only")]
+        public bool EvaluateApp
+        {
+            set
+            {
+                if (value)
+                {
+                    minimalSeverity = Severity.Warning;
+                    configFile = evaluateConfigFile;
+                }
+            }
+        }
 
         private static string SanitizePath(string value)
         {
