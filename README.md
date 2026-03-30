@@ -16,7 +16,7 @@ The list of plugins must be specified in the [configuration file](./TeamTools.Li
 ## Parameters
 
 | Parameter | Shortcut | Description |
-|-----------|---------|-------------|
+|-----------|----------|-------------|
 | `--config` | `-c` | Path to the configuration file |
 | `--dir` | `-d` | Path to a directory containing files to be linted |
 | `--file` | `-f` | Path to a single file to be linted |
@@ -26,7 +26,7 @@ The list of plugins must be specified in the [configuration file](./TeamTools.Li
 | `--severity` | `-s` | Minimum severity level of findings to include in results. Default is `info` (includes all errors, warnings, hints, and info messages). Use `warning` to include only errors and warnings, or `error` for only explicit errors. Severity levels for each rule are defined in the plugin configuration |
 | `--basepath` | `-r` | Base path for files. If specified, relative paths (with this base) will be used in logs and output instead of absolute paths |
 | `--verbose` | `-v` | Print detailed progress information to the console |
-| `--withversion` | `-n` | Print the version number before outputting results. Unlike `--version`, this allows linting to proceed while also showing the current version in the log |
+| `--with-version` | `-n` | Print the version number before outputting results. Unlike `--version`, this allows linting to proceed while also showing the current version in the log |
 | `--diff` | — | Lint all files differing from the `master` branch. Works only when running on files in a Git repository (Git must be in `PATH`). Alternatively, compute the file list manually, save it to a text file, and pass its path via `--filelist` |
 | `--quiet` | — | Do not return a non‑zero exit code if linting findings are detected |
 | `--version` | — | Print the utility version without performing other operations |
@@ -48,7 +48,7 @@ The diff is calculated via Git against the main branch; only modified files are 
 .\TeamTools.Linter.CommandLine.exe --file "c:\source\my_project\Stored procedures\dbo.my_proc.sql"
 ```
 
-### Linting all files in a directory and excluding info messages
+### Linting all files in a directory excluding info messages
 
 ```cmd
 .\TeamTools.Linter.CommandLine.exe --dir "c:\source\my_project" --severity warning

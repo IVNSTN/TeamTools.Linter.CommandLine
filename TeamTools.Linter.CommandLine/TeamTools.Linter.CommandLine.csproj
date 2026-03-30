@@ -38,11 +38,10 @@
 
   <!-- Stuff for embedding plugin binaries into the build output -->
   <PropertyGroup>
-    <SqlLinterProj>TeamTools.TSQL.Linter</SqlLinterProj>
-    <FileLinterProj>TeamTools.StructuredFiles.Linter</FileLinterProj>
-    <SsdtLinterProj>TeamTools.SSDT.ProjectValidator</SsdtLinterProj>
+    <SqlLinterProj>TeamTools.Linter.TSQL</SqlLinterProj>
+    <SsdtLinterProj>TeamTools.Linter.SSDT</SsdtLinterProj>
 
-    <PluginsPath>$(MSBuildThisFileDirectory)..</PluginsPath>
+    <PluginsPath>$(MSBuildThisFileDirectory)..\..</PluginsPath>
     <PluginSourceSubfolder Condition="'$(TargetFramework)'=='netcoreapp3.1'">bin\$(Configuration)\netstandard2.0</PluginSourceSubfolder>
     <PluginSourceSubfolder Condition="'$(TargetFramework)'!='netcoreapp3.1'">bin\$(Configuration)\$(TargetFramework)</PluginSourceSubfolder>
     <PluginNugetTargetSubfolder>tools\$(TargetFramework)\any\plugins</PluginNugetTargetSubfolder>
@@ -54,9 +53,6 @@
     <SqlLinterBin Include="$(PluginsPath)\$(SqlLinterProj)\$(PluginSourceSubfolder)\**\*.*">
       <InProject>false</InProject>
     </SqlLinterBin>
-    <FileLinterBin Include="$(PluginsPath)\$(FileLinterProj)\$(PluginSourceSubfolder)\**\*.*">
-      <InProject>false</InProject>
-    </FileLinterBin>
     <SsdtLinterBin Include="$(PluginsPath)\$(SsdtLinterProj)\$(PluginSourceSubfolder)\**\*.*">
       <InProject>false</InProject>
     </SsdtLinterBin>
@@ -79,7 +75,6 @@
 
   <Target Name="CopyPlugins" AfterTargets="AfterBuild">
     <Copy SourceFiles="@(SqlLinterBin)" DestinationFiles="$(TargetDir)\plugins\$(SqlLinterProj)\%(RecursiveDir)%(FileName)%(Extension)" />
-    <Copy SourceFiles="@(FileLinterBin)" DestinationFiles="$(TargetDir)\plugins\$(FileLinterProj)\%(RecursiveDir)%(FileName)%(Extension)" />
     <Copy SourceFiles="@(SsdtLinterBin)" DestinationFiles="$(TargetDir)\plugins\$(SsdtLinterProj)\%(RecursiveDir)%(FileName)%(Extension)" />
   </Target>
 
@@ -90,9 +85,6 @@
       </TfmSpecificPackageFile>
       <TfmSpecificPackageFile Include="@(SsdtLinterBin)">
         <PackagePath>$(PluginNugetTargetSubfolder)\$(SsdtLinterProj)\%(RecursiveDir)%(FileName)%(Extension)</PackagePath>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="@(FileLinterBin)">
-        <PackagePath>$(PluginNugetTargetSubfolder)\$(FileLinterProj)\%(RecursiveDir)%(FileName)%(Extension)</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
   </Target>

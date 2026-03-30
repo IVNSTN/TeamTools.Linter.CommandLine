@@ -15,7 +15,8 @@
       "Nuget.Config": "xml"
     },
     "[xml]": {
-      "editor.tabSize": 2
+      "editor.tabSize": 2,
+      "editor.wordWrap": "off"
     },
     "editor.insertSpaces": true,
     "editor.formatOnSave": true,
@@ -38,6 +39,10 @@
       },
       "editor.suggest.insertMode": "replace",
       "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "[code-workspace]": {
+      "editor.tabSize": 2,
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "markdownlint.config": {
       "MD033": {
@@ -134,7 +139,8 @@
       // To prevent weird values from local computer environment variables.
       // This will be converted into "Any CPU" by Directory.Build.props
       "PLATFORM": ""
-    }
+    },
+    "xml.format.maxLineWidth": 0
   },
   "extensions": {
     "recommendations": [
