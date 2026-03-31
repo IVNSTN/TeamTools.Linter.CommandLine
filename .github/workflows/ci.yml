@@ -72,6 +72,7 @@ jobs:
             3.1.x
             6.0.x
             8.0.x
+            10.0.x
 
       - name: Display dotnet version
         run: dotnet --info
@@ -140,6 +141,11 @@ jobs:
           -p:Configuration=${{ matrix.configuration }}
           -p:BaseOutputPath="${{ env.OUTPUT_PATH }}"
           -p:PublishDir="${{ env.PUBLISH_PATH }}/Release/net8.0"
+          && dotnet publish "${{ env.PUBLISH_PROJECT_PATH }}" --no-build
+          -p:TargetFramework=net10.0
+          -p:Configuration=${{ matrix.configuration }}
+          -p:BaseOutputPath="${{ env.OUTPUT_PATH }}"
+          -p:PublishDir="${{ env.PUBLISH_PATH }}/Release/net10.0"
 
       - name: Upload build for netcoreapp3.1
         uses: actions/upload-artifact@v4
@@ -158,6 +164,12 @@ jobs:
         with:
           name: ${{ env.PRODUCT_NAME }}-${{ needs.semver.outputs.next-version }}-${{ matrix.configuration }}-net8.0
           path: ${{ env.PUBLISH_PATH }}/${{ matrix.configuration }}/net8.0
+
+      - name: Upload build for net10.0
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PRODUCT_NAME }}-${{ needs.semver.outputs.next-version }}-${{ matrix.configuration }}-net10.0
+          path: ${{ env.PUBLISH_PATH }}/${{ matrix.configuration }}/net10.0
 
       - name: Test
         if: ${{ !matrix.coverage }}
@@ -265,14 +277,16 @@ jobs:
       fail-fast: false
       matrix:
         configuration: [Release]
-        dotnet: [netstandard2.0, net6.0, net8.0]
+        dotnet: [netstandard2.0, net6.0, net8.0, net10.0]
         include:
+          - dotnet: netstandard2.0
+            app-dotnet: netcoreapp3.1
           - dotnet: net6.0
             app-dotnet: net6.0
           - dotnet: net8.0
             app-dotnet: net8.0
-          - dotnet: netstandard2.0
-            app-dotnet: netcoreapp3.1
+          - dotnet: net10.0
+            app-dotnet: net10.0
 
     steps:
       - name: Grab CLI ${{ matrix.app-dotnet }}
