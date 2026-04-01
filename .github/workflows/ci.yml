@@ -72,6 +72,7 @@ jobs:
             3.1.x
             6.0.x
             8.0.x
+            10.0.x
 
       - name: Display dotnet version
         run: dotnet --info
@@ -140,24 +141,43 @@ jobs:
           -p:Configuration=${{ matrix.configuration }}
           -p:BaseOutputPath="${{ env.OUTPUT_PATH }}"
           -p:PublishDir="${{ env.PUBLISH_PATH }}/Release/net8.0"
+          && dotnet publish "${{ env.PUBLISH_PROJECT_PATH }}" --no-build
+          -p:TargetFramework=net10.0
+          -p:Configuration=${{ matrix.configuration }}
+          -p:BaseOutputPath="${{ env.OUTPUT_PATH }}"
+          -p:PublishDir="${{ env.PUBLISH_PATH }}/Release/net10.0"
 
-      - name: Upload build for netcoreapp3.1
+      - name: Upload build artifacts netcore3.1
         uses: actions/upload-artifact@v4
+        if: ${{ matrix.publish }}
         with:
           name: ${{ env.PRODUCT_NAME }}-${{ needs.semver.outputs.next-version }}-${{ matrix.configuration }}-netcoreapp3.1
           path: ${{ env.PUBLISH_PATH }}/${{ matrix.configuration }}/netcoreapp3.1
+          if-no-files-found: error
 
-      - name: Upload build for net6.0
+      - name: Upload build artifacts 6.0
         uses: actions/upload-artifact@v4
+        if: ${{ matrix.publish }}
         with:
           name: ${{ env.PRODUCT_NAME }}-${{ needs.semver.outputs.next-version }}-${{ matrix.configuration }}-net6.0
           path: ${{ env.PUBLISH_PATH }}/${{ matrix.configuration }}/net6.0
+          if-no-files-found: error
 
-      - name: Upload build for net8.0
+      - name: Upload build artifacts 8.0
         uses: actions/upload-artifact@v4
+        if: ${{ matrix.publish }}
         with:
           name: ${{ env.PRODUCT_NAME }}-${{ needs.semver.outputs.next-version }}-${{ matrix.configuration }}-net8.0
           path: ${{ env.PUBLISH_PATH }}/${{ matrix.configuration }}/net8.0
+          if-no-files-found: error
+
+      - name: Upload build artifacts 10.0
+        uses: actions/upload-artifact@v4
+        if: ${{ matrix.publish }}
+        with:
+          name: ${{ env.PRODUCT_NAME }}-${{ needs.semver.outputs.next-version }}-${{ matrix.configuration }}-net10.0
+          path: ${{ env.PUBLISH_PATH }}/${{ matrix.configuration }}/net10.0
+          if-no-files-found: error
 
       - name: Test
         if: ${{ !matrix.coverage }}
@@ -182,6 +202,7 @@ jobs:
         with:
           name: test-results
           path: TestResults
+          if-no-files-found: error
 
       - name: Test Report
         uses: dorny/test-reporter@v2
@@ -190,6 +211,7 @@ jobs:
           name: NUnit testing ${{ matrix.configuration }} build on ${{ matrix.os }}
           path: "**/TestResults/*.trx,*.trx"
           reporter: dotnet-trx
+          if-no-files-found: error
 
   validate-markdown:
     runs-on: ubuntu-latest
@@ -220,6 +242,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - name: Download test results
         uses: actions/download-artifact@v4
         with:
@@ -265,14 +288,16 @@ jobs:
       fail-fast: false
       matrix:
         configuration: [Release]
-        dotnet: [netstandard2.0, net6.0, net8.0]
+        dotnet: [netstandard2.0, net6.0, net8.0, net10.0]
         include:
+          - dotnet: netstandard2.0
+            app-dotnet: netcoreapp3.1
           - dotnet: net6.0
             app-dotnet: net6.0
           - dotnet: net8.0
             app-dotnet: net8.0
-          - dotnet: netstandard2.0
-            app-dotnet: netcoreapp3.1
+          - dotnet: net10.0
+            app-dotnet: net10.0
 
     steps:
       - name: Grab CLI ${{ matrix.app-dotnet }}
