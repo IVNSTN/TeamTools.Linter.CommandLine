@@ -11,11 +11,11 @@
     <IsPackable>true</IsPackable>
     <ToolCommandName>runlint</ToolCommandName>
     <PackAsTool>true</PackAsTool>
-    <PackageOutputPath>../.nupkg</PackageOutputPath>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReadmeFile>./readme.md</PackageReadmeFile>
+    <PackageOutputPath>../.nupkgs</PackageOutputPath>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageTags>T-SQL;tsql;sqlproj;Analyzer;StaticCodeAnalysis;CodeQuality;linting;TeamTools</PackageTags>
-    <Description>Command-line static code analysis tools for linting SQL projects</Description>
+    <Description>Command-line static code analysis tools for linting T-SQL projects organized in SSDT manner</Description>
   </PropertyGroup>
 
   <!-- Dependencies -->
@@ -31,7 +31,8 @@
 
   <!-- Manual includes -->
   <ItemGroup>
-    <Content Include="..\LICENSE" Pack="true" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(MSBuildThisFileDirectory)..\LICENSE" Pack="true" CopyToOutputDirectory="PreserveNewest" PackagePath="\" />
+    <Content Include="$(MSBuildThisFileDirectory)..\README.md" Pack="true" CopyToOutputDirectory="PreserveNewest" PackagePath="\" />
     <Content Include="DefaultConfig.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="EvaluateConfig.json" CopyToOutputDirectory="PreserveNewest" />
     <Folder Include="plugins\" />
