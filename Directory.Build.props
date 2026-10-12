@@ -31,6 +31,12 @@
     <NoWarn>$(NoWarn);CA1510</NoWarn>
     <!--  RCS1187 Use constant instead of field -->
     <NoWarn>$(NoWarn);RCS1187</NoWarn>
+    <!--  RCS1085 Use autoimplemented property -->
+    <NoWarn>$(NoWarn);RCS1085</NoWarn>
+    <!--  RCS1251 Remove unnecessary braces {} - until project migrates to higher compiler versions -->
+    <NoWarn>$(NoWarn);RCS1251</NoWarn>
+    <!--  RCS1266 Use raw string literal """ - until project migrates to higher compiler versions -->
+    <NoWarn>$(NoWarn);RCS1266</NoWarn>
   </PropertyGroup>
 
   <!-- Restore options -->
@@ -107,7 +113,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <AdditionalFiles Include="$(MSBuildThisFileDirectory).stylecop\stylecop.json" Visible="false" />
-    <PackageReference Include="Roslynator.Analyzers" Version="4.14.1">
+    <PackageReference Include="Roslynator.Analyzers" Version="4.15.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
