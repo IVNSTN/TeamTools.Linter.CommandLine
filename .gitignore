@@ -14,6 +14,7 @@ node_packages/
 
 # Packaged items
 .nupkg
+.nupkgs
 
 # Sonar temp folders
 .sonarqube/

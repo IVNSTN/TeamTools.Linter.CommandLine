@@ -21,6 +21,7 @@ env:
   PUBLISH_PROJECT_PATH: TeamTools.Linter.CommandLine/TeamTools.Linter.CommandLine.csproj
   OUTPUT_PATH: ${{ github.workspace }}/.bin/
   PUBLISH_PATH: ${{ github.workspace }}/.pub/
+  NUPKG_PATH: ${{ github.workspace }}/.nupkgs
 
 jobs:
   semver:
@@ -146,6 +147,23 @@ jobs:
           -p:Configuration=${{ matrix.configuration }}
           -p:BaseOutputPath="${{ env.OUTPUT_PATH }}"
           -p:PublishDir="${{ env.PUBLISH_PATH }}/Release/net10.0"
+
+      - name: Pack
+        if: ${{ matrix.publish }}
+        run: >
+          dotnet pack "${{ env.PUBLISH_PROJECT_PATH }}"
+          --no-build
+          --output "${{ env.NUPKG_PATH }}"
+          -p:PluginsPath=""
+          -p:Configuration=Release
+          -p:BaseOutputPath="${{ env.OUTPUT_PATH }}"
+          -p:VersionPrefix=${{ needs.semver.outputs.next-version }}
+          -p:Authors="Ivan Starostin et al"
+          -p:Copyright="2019- (c) Ivan Starostin"
+          -p:RepositoryCommit=${{ github.sha }}
+          -p:RepositoryUrl="${{ github.repositoryUrl }}"
+          -p:RepositoryType=git
+          -p:RepositoryBranch="${{ github.ref_name }}"
 
       - name: Upload build artifacts netcore3.1
         uses: actions/upload-artifact@v4
