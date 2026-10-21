@@ -1,6 +1,10 @@
 ﻿
 name: Release
 
+permissions:
+  contents: write
+  actions: read
+
 on:
 
   workflow_dispatch:
@@ -12,10 +16,6 @@ on:
 env:
   LOCAL_ARTIFACTS: ${{ github.workspace }}/local_artifacts
 
-permissions:
-  contents: write
-  actions: read
-
 jobs:
 
   prepare:
@@ -24,26 +24,38 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Grab artifacts
+    - name: Grab build artifacts
       uses: dawidd6/action-download-artifact@v11
       with:
         github_token: ${{secrets.GITHUB_TOKEN}}
+        name: TeamTools.*
+        name_is_regexp: true
         workflow: ci.yml
         workflow_conclusion: completed
         branch: main
+        skip_unpack: true
         path: ${{ env.LOCAL_ARTIFACTS }}
+
+    - name: Grab cli-version artifact
+      uses: dawidd6/action-download-artifact@v11
+      with:
+        github_token: ${{secrets.GITHUB_TOKEN}}
+        name: cli-version.json
+        workflow: ci.yml
+        workflow_conclusion: completed
+        branch: main
 
     - name: Detect versions
       id: get-tag
       run: |
-        TAG=$(jq -r '.CLI' ${{ env.LOCAL_ARTIFACTS }}/cli-version.json)
+        TAG=$(jq -r '.CLI' 'cli-version.json')
         echo "TAG=v$TAG" >> $GITHUB_OUTPUT
 
     - name: Create release
       uses: ncipollo/release-action@v1
       with:
         artifacts: "${{ env.LOCAL_ARTIFACTS }}/*.zip"
-        generateReleaseNotes: true
+        generateReleaseNotes: false
         draft: true
         name: ${{ steps.get-tag.outputs.TAG}}
         tag: ${{ steps.get-tag.outputs.TAG}}

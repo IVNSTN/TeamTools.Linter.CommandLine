@@ -3,6 +3,10 @@
 
 name: Build .NET lib
 
+permissions:
+  contents: write
+  actions: read
+
 on:
   push:
     branches: ["main"]
@@ -39,11 +43,9 @@ jobs:
           echo Next version: $VERSION
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Make version info file
-        run: |
           cat > cli-version.json << EOF
           {
-            "CLI": "${{steps.next-ver.output.VERSION}}"
+            "CLI": "$VERSION"
           }
           EOF
 
