@@ -1,0 +1,49 @@
+﻿
+name: Release
+
+on:
+
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        description: 'Branch to run on'
+        required: true
+        default: 'main'
+env:
+  LOCAL_ARTIFACTS: ${{ github.workspace }}/local_artifacts
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+
+  prepare:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Grab artifacts
+      uses: dawidd6/action-download-artifact@v11
+      with:
+        github_token: ${{secrets.GITHUB_TOKEN}}
+        workflow: ci.yml
+        workflow_conclusion: completed
+        branch: main
+        path: ${{ env.LOCAL_ARTIFACTS }}
+
+    - name: Detect versions
+      id: get-tag
+      run: |
+        TAG=$(jq -r '.CLI' ${{ env.LOCAL_ARTIFACTS }}/cli-version.json)
+        echo "TAG=v$TAG" >> $GITHUB_OUTPUT
+
+    - name: Create release
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: "${{ env.LOCAL_ARTIFACTS }}/*.zip"
+        generateReleaseNotes: true
+        draft: true
+        name: ${{ steps.get-tag.outputs.TAG}}
+        tag: ${{ steps.get-tag.outputs.TAG}}
