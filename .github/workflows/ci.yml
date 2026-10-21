@@ -39,6 +39,21 @@ jobs:
           echo Next version: $VERSION
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
+      - name: Make version info file
+        run: |
+          cat > cli-version.json << EOF
+          {
+            "CLI": "${{steps.next-ver.output.VERSION}}"
+          }
+          EOF
+
+      - name: Upload version info
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli-version.json
+          path: ${{ github.workspace }}/cli-version.json
+          if-no-files-found: error
+
   build:
     name: Build and test
     needs: semver
