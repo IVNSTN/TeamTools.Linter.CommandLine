@@ -12,6 +12,10 @@ on:
 env:
   LOCAL_ARTIFACTS: ${{ github.workspace }}/local_artifacts
 
+permissions:
+  contents: write
+  actions: read
+
 jobs:
 
   prepare:
